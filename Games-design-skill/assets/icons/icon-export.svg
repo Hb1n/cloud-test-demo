@@ -1,0 +1,7 @@
+<!-- Figma 2212:110986 download/export button 32x32 -->
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect width="32" height="32" rx="6" fill="#F5F5F5"/>
+  <path d="M10 16.0028V22H22V16" stroke="#333333" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M19 15.668L16 18.668L13 15.668" stroke="#333333" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M15.9961 10V18.6667" stroke="#333333" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

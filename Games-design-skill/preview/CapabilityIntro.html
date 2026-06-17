@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>能力标题 — 能力介绍</title>
+  <link rel="stylesheet" href="../assets/layout-shell.css" />
+  <style>
+    :root {
+      --primary: #1c5cfb;
+      --primary-light: #edf3ff;
+      --primary-bg-nav: #eaf5ff;
+      --text-0: #1c1f23;
+      --text-1: #171a1c;
+      --text-2: rgba(28, 31, 35, 0.6);
+      --text-3: rgba(23, 26, 28, 0.45);
+      --bg-page: #f9f9f9;
+      --bg-white: #ffffff;
+      --border: #e6e9ea;
+      --card-border: #edecec;
+      --tab-line-border: rgba(28, 31, 35, 0.08);
+      --danger: #f93920;
+      --media-bg: rgba(100, 28, 255, 0.15);
+      --media-text: rgba(100, 28, 255, 0.6);
+      --font: "PingFang SC", -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif;
+      --header-h: 60px;
+      --sidebar-w: 272px;
+      --content-w: 1072px;
+      --radius-card: 12px;
+      --radius-sm: 3px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--text-0);
+    }
+
+    /* Figma 1878:102224：Header 底 → 标题/内容顶 32px（由 layout-shell.css 提供，勿覆盖 padding-top） */
+    .main {
+      max-width: var(--content-w);
+      margin: 0 auto;
+      padding: 0 0 48px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      height: 28px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .breadcrumb a, .breadcrumb .sep { color: var(--text-2); text-decoration: none; }
+    .breadcrumb .sep { margin: 0 4px; }
+    .breadcrumb .current { color: var(--text-0); }
+
+    /* Cards */
+    .card {
+      background: var(--bg-white);
+      border-radius: var(--radius-card);
+      padding: 24px;
+      margin-bottom: 8px;
+    }
+    .card:last-child { margin-bottom: 0; }
+
+    /* intro：Figma 1878:102227，纵向 gap 16px，元信息在卡片内 */
+    .card.intro {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    .card.intro .page-title { margin-bottom: 0; }
+    .card.intro .desc { margin-bottom: 0; }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 32px;
+      margin-bottom: 16px;
+    }
+    .desc {
+      color: var(--text-2);
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    /* Line tabs */
+    .tabs-line {
+      display: flex;
+      border-bottom: 1px solid var(--tab-line-border);
+      margin-bottom: 16px;
+      background: transparent;
+    }
+    .tabs-line .tab {
+      padding: 16px 0 14px;
+      margin-right: 24px;
+      font-size: 14px;
+      color: var(--text-2);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: inherit;
+    }
+    .tabs-line .tab.active {
+      color: var(--text-0);
+      font-weight: 600;
+      border-bottom-color: var(--primary);
+    }
+
+    /* Button tabs（合集 · ≥2 层 Tab） */
+    .tabs-btn {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .tabs-btn .tab {
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text-2);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+    }
+    .tabs-btn .tab.active {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 32px;
+    }
+
+    /* 变体切换：tabLevels ≥ 2 → 合集样式 */
+    body.variant-collection .single-only { display: none !important; }
+    body.variant-single .collection-only { display: none !important; }
+    body.variant-collection .examples {
+      justify-content: space-between;
+      gap: 0;
+    }
+    #collection-value-header .section-title { margin-bottom: 16px; }
+    #collection-value-header .desc { margin-bottom: 0; }
+    #collection-sub-header { margin-bottom: 32px; }
+
+    /* 能力价值首块：标题+描述+CTA，下方 16px 接指标卡（无分割线） */
+    .value-block { margin-bottom: 32px; }
+    .value-block:last-child { margin-bottom: 0; }
+    .value-block .metrics { margin-top: 16px; }
+    .value-block .sub-header.is-part-hidden + .metrics { margin-top: 0; }
+    .value-block .sub-header { margin-bottom: 0; }
+
+    /* Sub header row */
+    .sub-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .sub-header-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 24px;
+      margin: 0 0 16px;
+    }
+    .sub-header .section-title {
+      margin: 0;
+    }
+    .sub-header .desc {
+      margin: 0;
+      width: 100%;
+    }
+    .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin: 0;
+      flex-wrap: wrap;
+    }
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-2);
+      font-size: 14px;
+      --meta-icon-muted: rgba(28, 31, 35, 0.6);
+    }
+    .meta-link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--primary);
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 14px;
+      --meta-icon-primary: #1c5cfb;
+    }
+    /* Figma 16×16 元信息图标，SVG 可通过 CSS 变量染色 */
+    .meta-icon {
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      min-height: 16px;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .meta-icon svg,
+    .meta-icon img {
+      display: block;
+      width: 16px;
+      height: 16px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: #1649d4; }
+
+    .block { margin-bottom: 32px; }
+    .block:last-child { margin-bottom: 0; }
+
+    .info-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .info-sections .block,
+    .info-sections .value-block { margin-bottom: 0; }
+    .info-section.is-hidden { display: none; }
+    .is-part-hidden { display: none !important; }
+    .info-sections.is-empty { display: none; }
+    .card.info.is-content-empty { display: none; }
+
+    /* 能力价值卡片：最少 2、最多 4，按 data-count 均分整行 */
+    .metrics {
+      display: grid;
+      gap: 16px;
+      margin-top: 16px;
+      width: 100%;
+    }
+    .metrics[data-count="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .metrics[data-count="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .metrics[data-count="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .metric-card {
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-card);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
+    }
+    .metric-card__body {
+      flex: 1;
+      min-width: 0;
+    }
+    /* 能力价值图标：Figma 1886:87457 · 容器与切图均为 48×48，SVG 通过 CSS 变量染色 */
+    .metric-icon {
+      --metric-icon-bg-0: #eaf5ff;
+      --metric-icon-bg-1: #cbe7fe;
+      --metric-icon-primary: #1c5cfb;
+      --metric-icon-highlight: rgba(255, 255, 255, 0.1);
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      min-height: 48px;
+      flex-shrink: 0;
+      display: block;
+      overflow: hidden;
+    }
+    .metric-icon svg {
+      display: block;
+      width: 48px;
+      height: 48px;
+    }
+    .metric-icon img {
+      display: block;
+      width: 48px;
+      height: 48px;
+    }
+    .metric-value {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+    .metric-value .num {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+    .metric-value .pct {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1;
+      margin-left: 0;
+    }
+    .metric-label {
+      font-size: 14px;
+      color: var(--text-2);
+      margin-top: 8px;
+    }
+
+    /* Bullet list */
+    .bullet-list { list-style: none; margin-top: 16px; }
+    .bullet-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      color: var(--text-2);
+      margin-bottom: 8px;
+    }
+    .bullet-list li:last-child { margin-bottom: 0; }
+    .bullet-list li::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--text-2);
+      margin-top: 7.5px;
+      flex-shrink: 0;
+    }
+
+    /* 应用示例：1~3 项左对齐 gap 52px；4 项 justify-between（Figma 2224:32184） */
+    .examples {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: 52px;
+      margin-top: 16px;
+      width: 100%;
+      max-width: 1024px;
+    }
+    .examples[data-count="4"] {
+      justify-content: space-between;
+      gap: 0;
+    }
+    .ex-col {
+      width: 216px;
+      flex: 0 0 216px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    /* 描述区 58px：标题 20 + gap 6 + 辅助文案 32（两行） */
+    .ex-col__text {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      height: 58px;
+      flex-shrink: 0;
+      width: 216px;
+    }
+    .ex-col h4 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+      height: 20px;
+      color: var(--text-0);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ex-col .ex-desc {
+      margin: 0;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--text-2);
+      height: 32px;
+      min-height: 32px;
+      max-height: 32px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      word-break: break-word;
+    }
+    .ex-media {
+      width: 216px;
+      height: 467px;
+      flex-shrink: 0;
+      border-radius: var(--radius-card);
+      border: 0.5px solid rgba(0, 0, 0, 0.08);
+      background: var(--media-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--media-text);
+      font-size: 17px;
+      font-weight: 500;
+      text-align: center;
+      padding: 16px;
+      overflow: hidden;
+    }
+    .ex-media img,
+    .ex-media video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+      display: block;
+    }
+
+    /* Pagination（仅应用示例 >4 项时展示） */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      margin-top: 16px;
+      height: 32px;
+    }
+    .pagination.is-hidden {
+      display: none;
+    }
+    .pagination button {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-0);
+    }
+    .pagination button:hover:not(:disabled) { background: rgba(46, 50, 56, 0.05); }
+    .pagination button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .pagination .page-text {
+      min-width: 44px;
+      text-align: center;
+      font-size: 14px;
+      line-height: 32px;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .ico-svg { display: inline-block; vertical-align: middle; }
+
+    /* 预览：模版选型切换条 */
+    .template-switcher {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      font-size: 12px;
+      color: var(--text-2);
+    }
+    .template-switcher button {
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-white);
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      color: var(--text-0);
+    }
+    .template-switcher button.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-left">
+    <!-- Logo -->
+    <div class="logo">
+      <svg viewBox="0 0 131.947 23.9475" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <path d="M67.0093 3.13313H131.947V21.855H67.0093L62.393 12.495L67.0093 3.13313Z" fill="var(--fill-0,black)"/>
+        <path d="M17.4119 4.79438C16.7741 4.3715 16.227 3.82119 15.8036 3.17666C15.3802 2.53214 15.0893 1.80677 14.9484 1.04438C14.8863 0.699849 14.8549 0.350303 14.8546 7.62939e-06H10.81V16.5C10.7745 17.3913 10.4032 18.2343 9.77334 18.8532C9.14351 19.4722 8.30378 19.8194 7.42915 19.8225C6.88075 19.822 6.34068 19.6856 5.85543 19.425C5.30704 19.1321 4.84762 18.6918 4.52683 18.1518C4.20604 17.6118 4.03611 16.9926 4.03539 16.3613C4.03685 15.4439 4.39493 14.5646 5.03112 13.9161C5.66731 13.2676 6.52968 12.9029 7.42915 12.9019C7.76853 12.9027 8.10579 12.9565 8.42925 13.0613V8.85938C8.098 8.81061 7.76383 8.78554 7.42915 8.78438C5.45942 8.78637 3.57091 9.58528 2.1781 11.0058C0.785291 12.4263 0.00195136 14.3524 4.50623e-06 16.3613C-0.00131226 17.5805 0.285971 18.7821 0.837446 19.8639C1.38892 20.9457 2.18829 21.8757 3.16763 22.575C4.41393 23.4699 5.90129 23.9493 7.42547 23.9475C9.39505 23.945 11.2833 23.146 12.676 21.7256C14.0687 20.3051 14.8522 18.3794 14.8546 16.3706V7.99688C16.4903 9.19636 18.4546 9.84053 20.4692 9.83813V5.71313C19.3842 5.71636 18.3218 5.39709 17.4119 4.79438Z" fill="var(--fill-0,black)"/>
+        <path d="M27.231 4.20004V17.6738C27.2391 17.7744 27.2262 17.8756 27.1933 17.9707C27.1603 18.0659 27.108 18.1529 27.0398 18.226C26.9716 18.2991 26.889 18.3567 26.7974 18.395C26.7059 18.4333 26.6074 18.4514 26.5085 18.4482H25.3337V20.385H27.0876C28.4241 20.385 29.2367 19.5919 29.2367 18.1538V4.20004H27.231ZM31.0917 11.85L25.3264 12.735V14.7263L31.0917 13.8413V11.85ZM31.0917 6.87378H25.3264V8.77129H31.0917V6.87378ZM40.0376 20.6794V4.20004H37.9583V20.6813L40.0376 20.6794ZM36.7559 12.075V10.1382L32.4191 9.34504V11.2988L36.7559 12.075ZM36.7559 7.92754V5.97191L32.4191 5.17879V7.13441L36.7559 7.92754ZM41.5359 13.7532L31.7774 14.6363V16.59L41.5359 15.7238V13.7532Z" fill="var(--fill-0,black)"/>
+        <path d="M59.8247 9.88876H43.378V11.7319H59.8247V9.88876ZM54.2414 10.3125H56.3905L56.9145 8.06251H54.7469L54.2414 10.3125ZM43.7218 7.27126H59.4809V5.42813H52.9213L52.6327 4.26751H50.4634L50.7704 5.42813H43.7218V7.27126ZM46.8858 10.3125H49.0349L48.5293 8.06251H46.3783L46.8858 10.3125ZM46.1504 17.4375H57.1369V15.75H46.1504V17.4375ZM47.2534 18.7275C47.1315 18.729 47.0139 18.6814 46.9262 18.5951C46.8384 18.5087 46.7875 18.3906 46.7846 18.2663V15.0225C46.7841 14.9595 46.7959 14.897 46.8193 14.8387C46.8427 14.7803 46.8771 14.7273 46.9207 14.6827C46.9643 14.638 47.0162 14.6026 47.0733 14.5786C47.1304 14.5545 47.1917 14.5423 47.2534 14.5425H55.964C56.0259 14.542 56.0873 14.5541 56.1447 14.578C56.202 14.602 56.2541 14.6373 56.2979 14.682C56.3417 14.7267 56.3763 14.7798 56.3998 14.8382C56.4233 14.8967 56.4351 14.9593 56.4346 15.0225V18.2663C56.4317 18.3909 56.3806 18.5094 56.2925 18.5958C56.2043 18.6822 56.0862 18.7295 55.964 18.7275H47.2534ZM46.5181 20.6025H56.6994C57.8741 20.6025 58.5084 19.9575 58.5084 18.7594V14.5894C58.5084 13.3913 57.8741 12.7463 56.6994 12.7463H46.507C45.3323 12.7463 44.6998 13.3913 44.6998 14.5894V18.7725C44.7035 19.9706 45.3359 20.6156 46.5107 20.6156L46.5181 20.6025Z" fill="var(--fill-0,black)"/>
+        <path d="M71.2433 7.74753H83.1104V6.07504H71.2433V7.74753ZM70.6329 12.9807H83.7244V11.3119H70.6366L70.6329 12.9807ZM71.0649 19.245C74.3502 17.7882 75.4367 14.5575 75.4367 9.84191V6.97504H73.7105V10.1288C73.7105 13.3294 73.2508 15.7875 71.0649 17.1207V19.245ZM79.4225 19.1832H81.1322V6.97504H79.4225V19.1832Z" fill="var(--fill-0,white)"/>
+        <path d="M92.218 11.4019C93.6446 10.6519 94.6263 8.86874 94.6263 5.74499H93.1004C93.1004 7.48874 92.832 8.41499 92.2235 9.09749L92.218 11.4019ZM94.2991 8.45999L98.6709 8.47499V6.89811H94.2991V8.45999ZM98.7996 19.1231V17.3625C96.3747 16.6125 94.8727 14.175 94.5455 11.1131H93.06C93.3928 15.33 95.5327 18.3337 98.7996 19.1231ZM92.4055 19.1231C95.2459 17.94 97.9374 15.9075 97.9374 9.49124V8.97561H96.3159V9.49124C96.3159 14.4056 94.6502 16.2562 92.4055 17.3025V19.1231ZM85.6529 19.0912C87.8241 17.7262 88.7617 15.0881 88.7617 12.1294V8.51249H87.1696V11.94C87.1696 14.1544 86.5905 15.8231 85.6529 16.6575V19.0912ZM90.1148 11.7787V16.86C90.1148 17.1337 89.9953 17.3156 89.7287 17.3156H88.8959V18.8625H90.3373C91.2455 18.8625 91.7363 18.3619 91.7363 17.4375V11.3569C91.7363 10.5525 91.2896 10.0987 90.5009 10.0987H88.008L87.9638 11.5237H89.8519C89.8861 11.5196 89.9207 11.5233 89.9532 11.5347C89.9857 11.5461 90.0153 11.5649 90.0397 11.5896C90.0641 11.6143 90.0827 11.6443 90.0941 11.6774C90.1055 11.7105 90.1095 11.7458 90.1056 11.7806L90.1148 11.7787ZM88.1367 7.97436H89.6681L89.1919 5.74499H87.5851L88.1367 7.97436ZM91.9735 7.09499H85.6529V8.65686H91.9735V7.09499Z" fill="var(--fill-0,white)"/>
+        <path d="M111.034 12.0844L112.062 8.41316H110.187L109.161 12.0844H111.034ZM102.782 12.0844H104.655L103.629 8.41316H101.756L102.782 12.0844ZM101.057 7.71566H112.924V6.07504H101.057V7.71566ZM100.454 14.4038H113.54V12.7669H100.454V14.4038ZM106.12 19.1775H107.859V6.92628H106.12V19.1775Z" fill="var(--fill-0,white)"/>
+        <path d="M128.161 9.63752L126.926 7.25627H125.038L126.658 10.5619L127.507 9.8794H117.528L120.427 5.8294H118.419L115.564 9.74252C115 10.5169 115.445 11.5481 116.59 11.5481H127.031C128.071 11.5388 128.65 10.575 128.161 9.63752ZM118.197 17.3869C118.097 17.3889 118 17.3507 117.928 17.2805C117.855 17.2104 117.812 17.1139 117.809 17.0119V14.7619C117.809 14.71 117.819 14.6585 117.838 14.6105C117.858 14.5625 117.886 14.5189 117.922 14.4822C117.958 14.4456 118.001 14.4167 118.048 14.3971C118.096 14.3775 118.146 14.3677 118.197 14.3682H125.588C125.638 14.3679 125.689 14.3779 125.736 14.3976C125.783 14.4173 125.825 14.4463 125.861 14.4829C125.897 14.5195 125.925 14.563 125.945 14.6109C125.964 14.6588 125.974 14.7101 125.974 14.7619V17.0119C125.97 17.1135 125.928 17.2097 125.856 17.2799C125.784 17.35 125.687 17.3884 125.588 17.3869H118.197ZM117.543 19.0557H126.242C127.209 19.0557 127.729 18.525 127.729 17.5388V14.2388C127.729 13.2525 127.209 12.7219 126.242 12.7219H117.552C116.585 12.7219 116.064 13.2525 116.064 14.2388V17.5294C116.055 18.5156 116.576 19.0463 117.552 19.0463L117.543 19.0557Z" fill="var(--fill-0,white)"/>
+      </svg>
+    </div>
+
+    <!-- Nav Tabs -->
+    <ul class="nav-tabs">
+      <li>首页</li>
+      <li>解决方案</li>
+      <li>客户案例</li>
+      <li>文档<span class="nav-chevron"><svg viewBox="0 0 6 4" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.83961 3.81916C5.62575 4.06028 5.27902 4.06028 5.06517 3.81916L3 1.49064L0.93483 3.81916C0.720975 4.06028 0.374247 4.06028 0.160391 3.81916C-0.0534638 3.57803 -0.0534638 3.18709 0.160391 2.94596L2.61278 0.180845C2.82664 -0.0602815 3.17336 -0.0602815 3.38722 0.180845L5.83961 2.94596C6.05346 3.18709 6.05346 3.57803 5.83961 3.81916Z" fill="rgba(0,0,0,0.75)"/></svg></span></li>
+      <li>学堂</li>
+      <li>社区</li>
+      <li>服务市场</li>
+      <li>支持与服务<span class="nav-chevron"><svg viewBox="0 0 6 4" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.83961 3.81916C5.62575 4.06028 5.27902 4.06028 5.06517 3.81916L3 1.49064L0.93483 3.81916C0.720975 4.06028 0.374247 4.06028 0.160391 3.81916C-0.0534638 3.57803 -0.0534638 3.18709 0.160391 2.94596L2.61278 0.180845C2.82664 -0.0602815 3.17336 -0.0602815 3.38722 0.180845L5.83961 2.94596C6.05346 3.18709 6.05346 3.57803 5.83961 3.81916Z" fill="rgba(0,0,0,0.75)"/></svg></span></li>
+      <li>合作平台<span class="nav-chevron"><svg viewBox="0 0 6 4" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.83961 3.81916C5.62575 4.06028 5.27902 4.06028 5.06517 3.81916L3 1.49064L0.93483 3.81916C0.720975 4.06028 0.374247 4.06028 0.160391 3.81916C-0.0534638 3.57803 -0.0534638 3.18709 0.160391 2.94596L2.61278 0.180845C2.82664 -0.0602815 3.17336 -0.0602815 3.38722 0.180845L5.83961 2.94596C6.05346 3.18709 6.05346 3.57803 5.83961 3.81916Z" fill="rgba(0,0,0,0.75)"/></svg></span></li>
+    </ul>
+  </div>
+
+  <div class="header-right">
+    <div class="search-input">
+      <span>输入关键词搜索</span>
+      <svg class="search-icon" viewBox="0 0 16 16" fill="none">
+        <circle cx="7" cy="7" r="4.5" stroke="rgba(0,0,0,0.4)" stroke-width="1.5"/>
+        <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="rgba(0,0,0,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="console-btn">控制台</span>
+    <div class="user-block">
+      <div class="user-bell">
+        <svg viewBox="0 0 15.1704 17.6667" fill="none" preserveAspectRatio="xMidYMid meet">
+          <path d="M0.262402 12.0529C-0.448745 13.1907 0.36928 14.6667 1.71107 14.6667H4.34468L4.34493 14.67H10.8255L10.8257 14.6667H13.4593C14.8011 14.6667 15.6191 13.1907 14.908 12.0529L13.9098 10.4558C13.4798 9.7679 13.2518 8.97299 13.2518 8.16176V6.5C13.2518 4.09178 11.7508 2.03676 9.63379 1.21544C9.23774 0.491194 8.46883 0 7.58518 0C6.70154 0 5.93262 0.491195 5.53657 1.21544C3.41959 2.03676 1.91851 4.09178 1.91851 6.5V8.16176C1.91851 8.973 1.69054 9.7679 1.26058 10.4558L0.262402 12.0529Z" fill="#262D34" fill-opacity="0.75"/>
+          <path d="M7.58521 17.6667C6.31268 17.6667 5.21098 16.9353 4.67748 15.87H10.4929C9.95943 16.9353 8.85773 17.6667 7.58521 17.6667Z" fill="#262D34" fill-opacity="0.75"/>
+        </svg>
+      </div>
+      <div class="user-badge">99+</div>
+      <div class="user-name-row">
+        <span>Sally07…</span>
+        <div class="user-chevron-wrap">
+          <svg viewBox="0 0 16 16" fill="none">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M11.7862 10.4255C11.501 10.747 11.0387 10.747 10.7536 10.4255L8.00002 7.32085L5.24646 10.4255C4.96132 10.747 4.49902 10.747 4.21388 10.4255C3.92874 10.104 3.92874 9.58278 4.21388 9.26128L7.48373 5.57446C7.76887 5.25296 8.23117 5.25296 8.51631 5.57446L11.7862 9.26128C12.0713 9.58278 12.0713 10.104 11.7862 10.4255Z" fill="#262D34"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== LAYOUT BODY ===== -->
+<div class="layout-body">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar-column">
+  <aside class="sidebar">
+
+    <!-- App Switcher -->
+    <div class="app-switcher">
+      <div class="app-switcher-info">
+        <div class="app-avatar">
+          <div class="avatar-bg" aria-hidden="true"></div>
+          <div class="avatar-overlay"></div>
+        </div>
+        <div class="app-meta">
+          <div class="app-name">航海王热血航线</div>
+          <div class="app-id-row">
+            <span class="app-id">AppID:32193237437…</span>
+            <svg class="copy-icon" viewBox="0 0 16 16" fill="none">
+              <path d="M4.33301 4.1432V2.60352C4.33301 2.08575 4.75273 1.66602 5.27051 1.66602H13.3955C13.9133 1.66602 14.333 2.08575 14.333 2.60352V10.7285C14.333 11.2463 13.9133 11.666 13.3955 11.666H11.8384" stroke="var(--stroke-0,#1C5CFB)" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10.7295 4.33398H2.60449C2.08673 4.33398 1.66699 4.75372 1.66699 5.27148V13.3965C1.66699 13.9143 2.08673 14.334 2.60449 14.334H10.7295C11.2473 14.334 11.667 13.9143 11.667 13.3965V5.27148C11.667 4.75372 11.2473 4.33398 10.7295 4.33398Z" stroke="var(--stroke-0,#1C5CFB)" stroke-width="1.33" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <svg class="switch-icon" viewBox="0 0 16 16" fill="none">
+        <defs><clipPath id="cp-sw"><rect width="16" height="16" fill="white"/></clipPath></defs>
+        <g clip-path="url(#cp-sw)">
+          <path d="M3.334 2.666L1.334 4.666L3.334 6.666" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12.666 9.334L14.666 11.334L12.666 13.334" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1.334 4.666H14.667" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1.334 11.334H14.667" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Nav Menu
+         data-group: group header id
+         data-parent: links child to group
+    -->
+    <nav class="nav-menu" id="navMenu">
+
+      <!-- 总览 (no children) -->
+      <div class="nav-group" data-group="overview" data-no-children>
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 44 44" fill="none" preserveAspectRatio="xMidYMid meet">
+              <rect x="2" y="2" width="40" height="40" rx="3" stroke="var(--stroke-0)" stroke-width="4" stroke-linejoin="round"/>
+              <rect x="10" y="10" width="8" height="8" stroke="var(--stroke-0)" stroke-width="4" stroke-linejoin="round"/>
+              <rect x="10" y="26" width="8" height="8" stroke="var(--stroke-0)" stroke-width="4" stroke-linejoin="round"/>
+              <path d="M26 26H34M26 34H34M26 10H34M26 18H34" stroke="var(--stroke-0)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">总览</span>
+        </div>
+      </div>
+
+      <!-- 管理 -->
+      <div class="nav-group" data-group="manage">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 16.7811 18.3016" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M15.9461 5.63188C15.9461 5.18028 15.7025 4.7638 15.3089 4.54241L9.00338 0.99553C8.62286 0.78149 8.15825 0.78149 7.77773 0.995531L1.47217 4.54241C1.07858 4.7638 0.835 5.18028 0.835 5.63187V12.6698C0.835 13.1213 1.07858 13.5378 1.47217 13.7592L7.77773 17.3061C8.15825 17.5201 8.62286 17.5201 9.00338 17.3061L15.3089 13.7592C15.7025 13.5378 15.9461 13.1213 15.9461 12.6698V5.63188Z" stroke="var(--stroke-0)" stroke-width="1.67"/>
+              <path d="M1.21787 5.10587L8.3906 9.15075M8.39053 16.7064V9.15082M15.4738 4.90082L8.39053 9.15082" stroke="var(--stroke-0)" stroke-width="1.67" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">管理</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="manage">
+        <div class="nav-item" data-item="版本管理"><span class="item-label">版本管理</span></div>
+        <div class="nav-item" data-item="用户反馈"><span class="item-label">用户反馈</span></div>
+        <div class="nav-item" data-item="信用分"><span class="item-label">信用分</span></div>
+      </div>
+
+      <!-- 运营 -->
+      <div class="nav-group" data-group="operations">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 20 20" fill="none">
+              <g transform="translate(5.111,15.749)"><path d="M0.515 0.655C1.720 1.602 3.239 2.167 4.890 2.167C6.541 2.167 8.061 1.602 9.265 0.655" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+              <g transform="translate(2.082,3.265)"><path d="M5.833 0.797C2.938 1.686 0.833 4.382 0.833 7.569C0.833 8.371 0.967 9.141 1.212 9.860" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+              <g transform="translate(11.839,3.265)"><path d="M0.245 0.797C3.140 1.686 5.245 4.382 5.245 7.569C5.245 8.371 5.111 9.141 4.866 9.860" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+              <g transform="translate(12.917,12.082)"><path d="M5 2.917A2.083 2.083 0 112.917 0.833 2.083 2.083 0 015 2.917Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(1.251,12.082)"><path d="M5 2.917A2.083 2.083 0 112.917 0.833 2.083 2.083 0 015 2.917Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(7.082,0.832)"><path d="M5 2.917A2.083 2.083 0 112.917 0.833 2.083 2.083 0 015 2.917Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+            </svg>
+          </div>
+          <span class="nav-group-label">运营</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children open" data-children="operations">
+        <div class="nav-item active" data-item="运营能力"><span class="item-label">运营能力</span></div>
+        <div class="nav-item" data-item="抖音开放能力"><span class="item-label">抖音开放能力</span></div>
+        <div class="nav-item" data-item="功能"><span class="item-label">功能</span></div>
+      </div>
+
+      <!-- 数据 -->
+      <div class="nav-group" data-group="data">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 17.5997 17.6003" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M5.73777 1.40749C4.75997 1.81295 3.88 2.40675 3.14311 3.14363C1.69541 4.59133 0.799992 6.59131 0.799992 8.80043C0.799992 13.2187 4.38168 16.8003 8.79991 16.8003C11.009 16.8003 13.009 15.9049 14.4567 14.4572C15.1936 13.7203 15.7874 12.8404 16.1928 11.8626" stroke="var(--stroke-0)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8.79975 8.79991H16.7997C16.7997 4.38168 13.218 0.799992 8.79975 0.799992L8.79975 8.79991Z" stroke="var(--stroke-0)" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">数据</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="data">
+        <div class="nav-item" data-item="用户分析"><span class="item-label">用户分析</span></div>
+        <div class="nav-item" data-item="性能分析"><span class="item-label">性能分析</span></div>
+        <div class="nav-item" data-item="自定义分析"><span class="item-label">自定义分析</span></div>
+      </div>
+
+      <!-- 商业化 -->
+      <div class="nav-group" data-group="commerce">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 18.67 18.7789" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M6.97343 5.57824L9.33437 8.41137L11.6953 5.57824" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M2.25158 4.63383C2.25158 4.63383 5.793 -0.796371 11.9314 1.32849C18.0699 3.45336 17.8338 9.59181 17.8338 9.59181" stroke="var(--stroke-0)" stroke-width="1.67" stroke-linecap="round"/>
+              <path d="M16.4172 14.0776C16.4172 14.0776 13.5841 19.2717 7.20955 17.6191C0.835 15.9664 0.835 9.35576 0.835 9.35576" stroke="var(--stroke-0)" stroke-width="1.67" stroke-linecap="round"/>
+              <path d="M6.50126 11.2445H12.1675M6.50126 8.41138H12.1675M9.33442 8.41138V14.0776" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">商业化</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="commerce">
+        <div class="nav-item" data-item="流量主"><span class="item-label">流量主</span></div>
+        <div class="nav-item" data-item="虚拟支付"><span class="item-label">虚拟支付</span></div>
+      </div>
+
+      <!-- 推广 -->
+      <div class="nav-group" data-group="promotion">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 19.9423 14.5" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M9.97122 9.33918C11.1287 9.33918 12.067 8.40378 12.067 7.24997C12.067 6.09617 11.1287 5.16082 9.97122 5.16082C8.81382 5.16082 7.87552 6.09617 7.87552 7.24997C7.87552 8.40378 8.81382 9.33918 9.97122 9.33918Z" stroke="var(--stroke-0)" stroke-width="1.5"/>
+              <path d="M6.2827 3.0553C3.82373 5.34704 3.82373 9.06263 6.2827 11.3544M13.6597 11.3544C16.1186 9.06263 16.1186 5.34704 13.6597 3.0553" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M3.45082 0.75C-0.150275 4.33986 -0.150275 10.1601 3.45082 13.75M16.4915 13.75C20.0926 10.1601 20.0926 4.33986 16.4915 0.75" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">推广</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="promotion">
+        <div class="nav-item" data-item="发行人计划"><span class="item-label">发行人计划</span></div>
+        <div class="nav-item" data-item="信息流投放"><span class="item-label">信息流投放</span></div>
+        <div class="nav-item" data-item="推广资金"><span class="item-label">推广资金</span></div>
+      </div>
+
+      <!-- 开发 -->
+      <div class="nav-group" data-group="develop">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 20 20" fill="none">
+              <g transform="translate(0.832,4.583)"><path d="M5.833 0.833L0.833 6.013L5.833 10.833" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(12.5,4.583)"><path d="M0.833 0.833L5.833 6.013L0.833 10.833" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(7.917,0.833)"><path d="M3.750 0.833L0.833 17.500" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+            </svg>
+          </div>
+          <span class="nav-group-label">开发</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="develop">
+        <div class="nav-item" data-item="开发设置"><span class="item-label">开发设置</span></div>
+      </div>
+
+      <!-- 设置 -->
+      <div class="nav-group" data-group="settings">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 18.3333 15.8333" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M13.3335 15L17.5 7.91667L13.3335 0.833333H5.00007L0.833333 7.91667L5.00007 15H13.3335Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linejoin="round"/>
+              <path d="M9.16667 10C10.3173 10 11.25 9.067 11.25 7.917C11.25 6.766 10.3173 5.833 9.16667 5.833C8.01607 5.833 7.08333 6.766 7.08333 7.917C7.08333 9.067 8.01607 10 9.16667 10Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">设置</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="settings">
+        <div class="nav-item" data-item="基础设置"><span class="item-label">基础设置</span></div>
+        <div class="nav-item" data-item="团队协作"><span class="item-label">团队协作</span></div>
+      </div>
+
+    </nav>
+  </aside>
+  </div><!-- sidebar-column -->
+
+    <div class="content-area">
+      <main class="main">
+        <nav class="breadcrumb" aria-label="面包屑">
+          <a href="#">一级页面</a>
+          <span class="sep">/</span>
+          <span class="current">二级页面</span>
+        </nav>
+
+        <section class="card intro">
+          <h1 class="page-title">能力标题</h1>
+          <p class="desc">
+            主标题能力描述内容显示主标题能力描述内容显示主标题能力描述内容显示主标题能力描述内容显示主标题能力描述内容显示主标题能力描述内容显示。
+          </p>
+          <div class="meta-row single-only" id="intro-meta">
+            <div class="meta-item">
+              <img class="meta-icon" src="../assets/icons/icon-mobile-app.svg" width="16" height="16" alt="" aria-hidden="true">
+              <span>适用 App :</span>
+              <span>抖音、抖音极速版</span>
+            </div>
+            <a class="meta-link" href="#">
+              <img class="meta-icon" src="../assets/icons/icon-brief-stroked.svg" width="16" height="16" alt="" aria-hidden="true">
+              能力接入指引
+            </a>
+          </div>
+        </section>
+
+        <div class="tabs-line collection-only" id="tabs-sub" role="tablist" aria-label="子能力"></div>
+
+        <div class="tabs-line single-only" id="tabs-function-line" role="tablist" aria-label="功能"></div>
+        <div class="tabs-btn collection-only" id="tabs-function-btn" role="tablist" aria-label="功能"></div>
+
+        <section class="card info tab-panel active" data-panel="0">
+          <div class="sub-header collection-only" id="collection-sub-header">
+            <div class="sub-header-left">
+              <h2 class="section-title" id="sub-capability-title">子能力标题</h2>
+              <p class="desc" id="sub-capability-desc">
+                标题能力描述内容显示标题能力描述内容显示标题能力描述内容显示标题能力描述内容显示标题能力描述内容显示标题能力。
+              </p>
+              <div class="meta-row" id="info-meta">
+                <div class="meta-item">
+                  <img class="meta-icon" src="../assets/icons/icon-mobile-app.svg" width="16" height="16" alt="" aria-hidden="true">
+                  <span>适用 App :</span>
+                  <span>抖音、抖音极速版</span>
+                </div>
+                <a class="meta-link" href="#">
+                  <img class="meta-icon" src="../assets/icons/icon-brief-stroked.svg" width="16" height="16" alt="" aria-hidden="true">
+                  能力接入指引
+                </a>
+              </div>
+            </div>
+            <button type="button" class="btn-primary" id="collection-cta">开始接入</button>
+          </div>
+          <div class="divider collection-only" id="collection-divider"></div>
+
+          <div class="info-sections" id="info-sections">
+          <div class="value-block info-section" data-section="capabilityValue" id="section-capability-value">
+            <div class="sub-header single-only" id="single-value-header">
+              <div class="sub-header-left">
+                <h2 class="section-title" id="capability-value-title">能力价值</h2>
+                <p class="desc" id="capability-value-intro">
+                  这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容。
+                </p>
+              </div>
+              <button type="button" class="btn-primary" id="capability-value-cta">开始接入</button>
+            </div>
+            <div class="collection-only" id="collection-value-header">
+              <h2 class="section-title" id="capability-value-title-collection">能力价值</h2>
+              <p class="desc" id="capability-value-intro-collection">
+                这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容。
+              </p>
+            </div>
+            <div class="metrics" id="metrics-grid" data-count="2" aria-live="polite"></div>
+          </div>
+
+          <div class="block info-section" data-section="textDescription" id="section-text-description">
+            <h2 class="section-title" id="text-description-title">文字描述</h2>
+            <ul class="bullet-list" id="text-description-list"></ul>
+          </div>
+
+          <div class="block info-section" data-section="applicationExamples" id="section-application-examples">
+            <h2 class="section-title" id="application-examples-title">应用示例</h2>
+            <div class="examples" id="examples-grid" data-count="4" aria-live="polite"></div>
+            <div class="pagination is-hidden" id="examples-pagination" aria-label="应用示例分页">
+              <button type="button" id="examples-prev" aria-label="上一页">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12 6l-4 4 4 4" stroke="#1c1f23" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <span class="page-text" id="examples-page-text">1 / 1</span>
+              <button type="button" id="examples-next" aria-label="下一页">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M8 6l4 4-4 4" stroke="#1c1f23" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+          </div><!-- info-sections -->
+        </section>
+
+        <section class="card info tab-panel" data-panel="placeholder" hidden>
+          <p class="desc" style="padding: 48px 0; text-align: center;">其他 Tab 内容可按业务配置</p>
+        </section>
+      </main>
+    </div>
+  </div><!-- layout-body -->
+
+  <div class="template-switcher" aria-label="模版选型预览">
+    <span>Tab 层级</span>
+    <button type="button" data-tab-levels="1" id="switch-single">1 层 · 单个</button>
+    <button type="button" data-tab-levels="2" id="switch-collection">≥2 层 · 合集</button>
+  </div>
+
+  <script>
+(function () {
+  const menu = document.getElementById('navMenu');
+  if (!menu) return;
+
+  function syncArrow(groupEl) {
+    const id = groupEl.dataset.group;
+    const children = menu.querySelector('[data-children="' + id + '"]');
+    const arrow = groupEl.querySelector('.nav-arrow');
+    if (!children || !arrow) return;
+    const isOpen = children.classList.contains('open');
+    arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+
+  menu.querySelectorAll('.nav-group[data-group]').forEach(function (g) { syncArrow(g); });
+
+  menu.addEventListener('click', function (e) {
+    const group = e.target.closest('.nav-group[data-group]');
+    const item = e.target.closest('.nav-item[data-item]');
+
+    if (group) {
+      const id = group.dataset.group;
+      if (group.dataset.noChildren !== undefined) {
+        menu.querySelectorAll('.nav-item.active').forEach(function (i) { i.classList.remove('active'); });
+        menu.querySelectorAll('.nav-group.active').forEach(function (g) { g.classList.remove('active'); });
+        group.classList.add('active');
+        return;
+      }
+      const children = menu.querySelector('[data-children="' + id + '"]');
+      if (!children) return;
+      children.classList.toggle('open');
+      syncArrow(group);
+      return;
+    }
+
+    if (item) {
+      menu.querySelectorAll('.nav-item.active').forEach(function (i) { i.classList.remove('active'); });
+      item.classList.add('active');
+    }
+  });
+})();
+</script>
+
+  <script>
+    /**
+     * 模版选型（见 references/CapabilityIntro.md §0）
+     * tabLevels: 1 → 单个能力介绍（单层 Line Tabs，元信息在 intro）
+     * tabLevels ≥ 2 → 合集能力介绍（Line 子能力 + Button 功能，元信息在 info）
+     */
+    var ICON_ASSETS = "../assets/icons/";
+    var PAGE_TEMPLATE_CONFIG = {
+      tabLevels: 1,
+      page: {
+        title: "能力标题",
+        desc: "主标题能力描述内容显示主标题能力描述内容显示主标题能力描述内容显示主标题能力描述内容显示主标题能力描述内容显示主标题能力描述内容显示。"
+      },
+      subCapabilities: ["子能力一", "子能力二", "子能力三", "子能力四"],
+      functionTabs: ["能力介绍", "功能二", "功能三", "功能四"],
+      subCapability: {
+        title: "子能力标题",
+        desc: "标题能力描述内容显示标题能力描述内容显示标题能力描述内容显示标题能力描述内容显示标题能力描述内容显示标题能力。"
+      }
+    };
+
+    /**
+     * info 区模块配置（默认与画板一致，修改后调用 applyPageContentConfig）
+     */
+    var PAGE_CONTENT_CONFIG = {
+      capabilityValue: {
+        show: true,
+        showTitle: true,
+        showIntro: true,
+        showMetrics: true,
+        showCta: true,
+        title: "能力价值",
+        intro: "这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容这是描述内容。",
+        ctaText: "开始接入",
+        metrics: [
+          { value: "10", unit: "%", label: "次日留存率平均提升" },
+          { value: "25", unit: "%", label: "7日留存率平均提升" }
+        ]
+      },
+      textDescription: {
+        show: true,
+        title: "文字描述",
+        items: [
+          "第一条描述内容第一条描述内容第一条描述内容",
+          "第二条描述内容第二条描述内容第二条描述内容"
+        ]
+      },
+      applicationExamples: {
+        show: true,
+        title: "应用示例",
+        items: [
+          { title: "标题 1", desc: "描述内容最多支持两行描述内容最多支持两行描述内容最多支持两行" },
+          { title: "标题 2", desc: "描述内容最多支持两行描述内容最多支持两行描述内容最多支持两行" },
+          { title: "标题 3", desc: "描述内容最多支持两行描述内容最多支持两行描述内容最多支持两行" },
+          { title: "标题 4", desc: "描述内容最多支持两行描述内容最多支持两行描述内容最多支持两行" }
+        ]
+      }
+    };
+
+    var METRIC_MIN = 2;
+    var METRIC_MAX = 4;
+
+    function renderCapabilityMetrics(items) {
+      var grid = document.getElementById("metrics-grid");
+      if (!grid) return;
+
+      var list = (items || []).slice(0, METRIC_MAX);
+      if (list.length < METRIC_MIN) {
+        console.warn("[能力价值] 至少需要 " + METRIC_MIN + " 项，当前为 " + list.length);
+        grid.innerHTML = "";
+        grid.removeAttribute("data-count");
+        return;
+      }
+
+      var count = list.length;
+      grid.setAttribute("data-count", String(count));
+      grid.innerHTML = "";
+
+      list.slice(0, count).forEach(function (item) {
+        var card = document.createElement("article");
+        card.className = "metric-card";
+
+        var iconWrap = document.createElement("div");
+        iconWrap.className = "metric-icon";
+        iconWrap.setAttribute("role", "img");
+        iconWrap.setAttribute("aria-label", item.iconAria || "能力提升趋势");
+        iconWrap.innerHTML =
+          '<img src="' + ICON_ASSETS + 'metric-value-rise.svg" width="48" height="48" alt="">';
+        card.appendChild(iconWrap);
+
+        var body = document.createElement("div");
+        body.className = "metric-card__body";
+
+        var valueRow = document.createElement("div");
+        valueRow.className = "metric-value";
+        valueRow.innerHTML =
+          '<span class="num">' + escapeHtml(item.value) + "</span>" +
+          (item.unit != null && item.unit !== ""
+            ? '<span class="pct">' + escapeHtml(item.unit) + "</span>"
+            : "");
+
+        var label = document.createElement("div");
+        label.className = "metric-label";
+        label.textContent = item.label || "";
+
+        body.appendChild(valueRow);
+        body.appendChild(label);
+        card.appendChild(body);
+        grid.appendChild(card);
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderTextDescription(items) {
+      var listEl = document.getElementById("text-description-list");
+      if (!listEl) return;
+      listEl.innerHTML = "";
+      (items || []).forEach(function (text) {
+        var li = document.createElement("li");
+        li.textContent = text;
+        listEl.appendChild(li);
+      });
+    }
+
+    function resolveCapabilityValueParts(cfg) {
+      cfg = cfg || {};
+      if (cfg.show === false) return { showSection: false };
+      var showTitle = cfg.showTitle !== false && !!cfg.title;
+      var showIntro = cfg.showIntro !== false && !!cfg.intro;
+      var metrics = (cfg.metrics || []).slice(0, METRIC_MAX);
+      var showMetrics = cfg.showMetrics !== false && metrics.length >= METRIC_MIN;
+      var showCta = cfg.showCta !== false;
+      return {
+        showSection: showTitle || showIntro || showMetrics || showCta,
+        showTitle: showTitle,
+        showIntro: showIntro,
+        showMetrics: showMetrics,
+        showCta: showCta,
+        title: cfg.title || "",
+        intro: cfg.intro || "",
+        ctaText: cfg.ctaText || "开始接入",
+        metrics: showMetrics ? metrics : []
+      };
+    }
+
+    function sectionHasContent(key, cfg) {
+      if (!cfg || cfg.show === false) return false;
+      if (key === "capabilityValue") return resolveCapabilityValueParts(cfg).showSection;
+      if (key === "textDescription") return (cfg.items || []).length > 0;
+      if (key === "applicationExamples") return (cfg.items || []).length > 0;
+      return false;
+    }
+
+    function setInfoSectionVisible(key, visible) {
+      var el = document.querySelector('.info-section[data-section="' + key + '"]');
+      if (el) el.classList.toggle("is-hidden", !visible);
+    }
+
+    function togglePart(el, visible) {
+      if (el) el.classList.toggle("is-part-hidden", !visible);
+    }
+
+    function syncInfoEmptyState() {
+      var anyVisible = document.querySelectorAll(".info-section:not(.is-hidden)").length > 0;
+      var sections = document.getElementById("info-sections");
+      var card = document.querySelector('.card.info.tab-panel[data-panel="0"]');
+      if (sections) sections.classList.toggle("is-empty", !anyVisible);
+      if (card) card.classList.toggle("is-content-empty", !anyVisible);
+    }
+
+    function applyPageContentConfig(config) {
+      var cfg = config || PAGE_CONTENT_CONFIG;
+
+      var cv = cfg.capabilityValue || {};
+      var cvParts = resolveCapabilityValueParts(cv);
+      setInfoSectionVisible("capabilityValue", cvParts.showSection);
+      if (cvParts.showSection) {
+        var titleEl = document.getElementById("capability-value-title");
+        var introEl = document.getElementById("capability-value-intro");
+        var ctaEl = document.getElementById("capability-value-cta");
+        var metricsEl = document.getElementById("metrics-grid");
+        var subHeader = document.querySelector("#section-capability-value .sub-header");
+
+        if (titleEl) {
+          titleEl.textContent = cvParts.title;
+          togglePart(titleEl, cvParts.showTitle);
+        }
+        if (introEl) {
+          introEl.textContent = cvParts.intro;
+          togglePart(introEl, cvParts.showIntro);
+        }
+        if (ctaEl) {
+          ctaEl.textContent = cvParts.ctaText;
+          togglePart(ctaEl, cvParts.showCta);
+        }
+        if (metricsEl) togglePart(metricsEl, cvParts.showMetrics);
+        if (subHeader) {
+          togglePart(subHeader, cvParts.showTitle || cvParts.showIntro || cvParts.showCta);
+        }
+        if (cvParts.showMetrics) {
+          renderCapabilityMetrics(cvParts.metrics);
+        } else if (metricsEl) {
+          metricsEl.innerHTML = "";
+          metricsEl.removeAttribute("data-count");
+        }
+      }
+
+      var td = cfg.textDescription || {};
+      var showTd = sectionHasContent("textDescription", td);
+      setInfoSectionVisible("textDescription", showTd);
+      if (showTd) {
+        var tdTitle = document.getElementById("text-description-title");
+        if (tdTitle && td.title) tdTitle.textContent = td.title;
+        renderTextDescription(td.items);
+      }
+
+      var ex = cfg.applicationExamples || {};
+      var showEx = sectionHasContent("applicationExamples", ex);
+      setInfoSectionVisible("applicationExamples", showEx);
+      if (showEx) {
+        var exTitle = document.getElementById("application-examples-title");
+        if (exTitle && ex.title) exTitle.textContent = ex.title;
+        renderApplicationExamples(ex.items, 1);
+      } else {
+        renderApplicationExamples([], 1);
+      }
+
+      syncInfoEmptyState();
+    }
+
+    function isCollectionVariant() {
+      return (PAGE_TEMPLATE_CONFIG.tabLevels || 1) >= 2;
+    }
+
+    function syncCapabilityValueTitles(cvParts) {
+      var titleCol = document.getElementById("capability-value-title-collection");
+      var introCol = document.getElementById("capability-value-intro-collection");
+      if (titleCol) {
+        titleCol.textContent = cvParts.title;
+        titleCol.classList.toggle("is-part-hidden", !cvParts.showTitle);
+      }
+      if (introCol) {
+        introCol.textContent = cvParts.intro;
+        introCol.classList.toggle("is-part-hidden", !cvParts.showIntro);
+      }
+      var ctaCol = document.getElementById("collection-cta");
+      if (ctaCol) {
+        ctaCol.textContent = cvParts.ctaText;
+        togglePart(ctaCol, cvParts.showCta);
+      }
+    }
+
+  var _applyPageContentConfigBase = applyPageContentConfig;
+  applyPageContentConfig = function (config) {
+    _applyPageContentConfigBase(config);
+    var cv = (config || PAGE_CONTENT_CONFIG).capabilityValue || {};
+    syncCapabilityValueTitles(resolveCapabilityValueParts(cv));
+  };
+
+    function renderTabButtons(container, tabs, type) {
+      if (!container) return;
+      container.innerHTML = "";
+      (tabs || []).forEach(function (label, i) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "tab" + (i === 0 ? " active" : "");
+        btn.textContent = label;
+        btn.dataset[type] = String(i);
+        container.appendChild(btn);
+      });
+    }
+
+    function applyPageTemplate(config) {
+      var cfg = config || PAGE_TEMPLATE_CONFIG;
+      PAGE_TEMPLATE_CONFIG = cfg;
+      var levels = cfg.tabLevels == null ? 1 : Number(cfg.tabLevels);
+      var collection = levels >= 2;
+
+      document.body.classList.toggle("variant-single", !collection);
+      document.body.classList.toggle("variant-collection", collection);
+
+      var page = cfg.page || {};
+      var titleEl = document.querySelector(".card.intro .page-title");
+      var descEl = document.querySelector(".card.intro .desc");
+      if (titleEl && page.title) titleEl.textContent = page.title;
+      if (descEl && page.desc) descEl.textContent = page.desc;
+
+      var sub = cfg.subCapability || {};
+      var subTitle = document.getElementById("sub-capability-title");
+      var subDesc = document.getElementById("sub-capability-desc");
+      if (subTitle && sub.title) subTitle.textContent = sub.title;
+      if (subDesc && sub.desc) subDesc.textContent = sub.desc;
+
+      var fnTabs = cfg.functionTabs || ["能力介绍", "功能二", "功能三", "功能四"];
+      if (collection) {
+        renderTabButtons(document.getElementById("tabs-sub"), cfg.subCapabilities, "line");
+        renderTabButtons(document.getElementById("tabs-function-btn"), fnTabs, "btn");
+      } else {
+        renderTabButtons(document.getElementById("tabs-function-line"), fnTabs, "line");
+      }
+
+      document.querySelectorAll(".template-switcher button").forEach(function (btn) {
+        var lv = Number(btn.dataset.tabLevels);
+        btn.classList.toggle("active", collection ? lv >= 2 : lv === 1);
+      });
+
+      initTabSwitching();
+      applyPageContentConfig(PAGE_CONTENT_CONFIG);
+    }
+
+    function initTabSwitching() {
+      var lineTabs = document.querySelectorAll("#tabs-function-line .tab");
+      var subTabs = document.querySelectorAll("#tabs-sub .tab");
+      var btnTabs = document.querySelectorAll("#tabs-function-btn .tab");
+      var mainPanel = document.querySelector('.tab-panel[data-panel="0"]');
+      var placeholderPanel = document.querySelector('.tab-panel[data-panel="placeholder"]');
+
+      function setActive(tabs, idx) {
+        tabs.forEach(function (t, i) {
+          t.classList.toggle("active", i === idx);
+        });
+      }
+
+      function showMainPanel(show) {
+        if (mainPanel) {
+          mainPanel.classList.toggle("active", show);
+          mainPanel.hidden = !show;
+        }
+        if (placeholderPanel) {
+          placeholderPanel.classList.toggle("active", !show);
+          placeholderPanel.hidden = show;
+        }
+      }
+
+      lineTabs.forEach(function (tab, i) {
+        tab.onclick = function () {
+          setActive(lineTabs, i);
+          showMainPanel(i === 0);
+        };
+      });
+
+      subTabs.forEach(function (tab, i) {
+        tab.onclick = function () {
+          setActive(subTabs, i);
+        };
+      });
+
+      btnTabs.forEach(function (tab, i) {
+        tab.onclick = function () {
+          setActive(btnTabs, i);
+          showMainPanel(i === 0);
+        };
+      });
+
+      showMainPanel(true);
+    }
+
+    window.PAGE_TEMPLATE_CONFIG = PAGE_TEMPLATE_CONFIG;
+    window.PAGE_CONTENT_CONFIG = PAGE_CONTENT_CONFIG;
+    window.applyPageTemplate = applyPageTemplate;
+    window.applyPageContentConfig = applyPageContentConfig;
+    window.renderCapabilityMetrics = renderCapabilityMetrics;
+    window.renderTextDescription = renderTextDescription;
+
+    var EXAMPLE_PAGE_SIZE = 4;
+    var exampleCurrentPage = 1;
+
+    function getExampleTotalPages(total) {
+      return Math.max(1, Math.ceil(total / EXAMPLE_PAGE_SIZE));
+    }
+
+    function renderApplicationExamples(items, page) {
+      var grid = document.getElementById("examples-grid");
+      var pagination = document.getElementById("examples-pagination");
+      var pageText = document.getElementById("examples-page-text");
+      var prevBtn = document.getElementById("examples-prev");
+      var nextBtn = document.getElementById("examples-next");
+      if (!grid) return;
+
+      var list = items || [];
+      var total = list.length;
+      if (total === 0) {
+        grid.innerHTML = "";
+        grid.removeAttribute("data-count");
+        if (pagination) pagination.classList.add("is-hidden");
+        return;
+      }
+
+      var needPagination = total > EXAMPLE_PAGE_SIZE;
+      var totalPages = getExampleTotalPages(total);
+      var currentPage = page == null ? exampleCurrentPage : page;
+      if (currentPage < 1) currentPage = 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+      exampleCurrentPage = currentPage;
+
+      var pageItems;
+      if (needPagination) {
+        var start = (currentPage - 1) * EXAMPLE_PAGE_SIZE;
+        pageItems = list.slice(start, start + EXAMPLE_PAGE_SIZE);
+      } else {
+        pageItems = list;
+      }
+
+      var colCount = Math.min(EXAMPLE_PAGE_SIZE, Math.max(1, pageItems.length));
+      grid.setAttribute("data-count", String(colCount));
+      grid.innerHTML = "";
+
+      pageItems.forEach(function (item) {
+        var col = document.createElement("article");
+        col.className = "ex-col";
+
+        var textBlock = document.createElement("div");
+        textBlock.className = "ex-col__text";
+
+        var title = document.createElement("h4");
+        title.textContent = item.title || "";
+
+        var desc = document.createElement("p");
+        desc.className = "ex-desc";
+        desc.textContent = item.desc || "";
+
+        textBlock.appendChild(title);
+        textBlock.appendChild(desc);
+
+        var media = document.createElement("div");
+        media.className = "ex-media";
+        if (item.mediaSrc) {
+          if (item.mediaType === "video") {
+            var video = document.createElement("video");
+            video.src = item.mediaSrc;
+            video.controls = true;
+            video.setAttribute("playsinline", "");
+            media.appendChild(video);
+          } else {
+            var img = document.createElement("img");
+            img.src = item.mediaSrc;
+            img.alt = item.title || "";
+            media.appendChild(img);
+          }
+        } else {
+          media.textContent = item.mediaPlaceholder || "支持图片、视频";
+        }
+
+        col.appendChild(textBlock);
+        col.appendChild(media);
+        grid.appendChild(col);
+      });
+
+      if (pagination) {
+        if (needPagination) {
+          pagination.classList.remove("is-hidden");
+          if (pageText) pageText.textContent = currentPage + " / " + totalPages;
+          if (prevBtn) prevBtn.disabled = currentPage <= 1;
+          if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+        } else {
+          pagination.classList.add("is-hidden");
+        }
+      }
+    }
+
+    function initApplicationExamplesPagination() {
+      var prevBtn = document.getElementById("examples-prev");
+      var nextBtn = document.getElementById("examples-next");
+      if (prevBtn) {
+        prevBtn.addEventListener("click", function () {
+          if (exampleCurrentPage > 1) {
+            var items = (PAGE_CONTENT_CONFIG.applicationExamples || {}).items || [];
+            renderApplicationExamples(items, exampleCurrentPage - 1);
+          }
+        });
+      }
+      if (nextBtn) {
+        nextBtn.addEventListener("click", function () {
+          var items = (PAGE_CONTENT_CONFIG.applicationExamples || {}).items || [];
+          var totalPages = getExampleTotalPages(items.length);
+          if (exampleCurrentPage < totalPages) {
+            renderApplicationExamples(items, exampleCurrentPage + 1);
+          }
+        });
+      }
+    }
+
+    window.renderApplicationExamples = renderApplicationExamples;
+    initApplicationExamplesPagination();
+
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      if (params.has("tabs")) {
+        PAGE_TEMPLATE_CONFIG.tabLevels = Number(params.get("tabs")) || 1;
+      }
+      document.getElementById("switch-single").addEventListener("click", function () {
+        PAGE_TEMPLATE_CONFIG.tabLevels = 1;
+        applyPageTemplate(PAGE_TEMPLATE_CONFIG);
+      });
+      document.getElementById("switch-collection").addEventListener("click", function () {
+        PAGE_TEMPLATE_CONFIG.tabLevels = 2;
+        applyPageTemplate(PAGE_TEMPLATE_CONFIG);
+      });
+      applyPageTemplate(PAGE_TEMPLATE_CONFIG);
+    })();
+  </script>
+</body>
+</html>

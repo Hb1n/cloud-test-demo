@@ -1,0 +1,212 @@
+{
+  "meta": {
+    "name": "capability-center",
+    "figmaNodeId": "2236:36558",
+    "description": "抖音开放平台 · 游戏能力接入 / 能力中心页",
+    "baseline": "figma-aligned-shell-tabs",
+    "updatedAt": "2026-06-17"
+  },
+  "pageTitle": "游戏能力接入",
+  "accessStats": {
+    "current": 100,
+    "total": 100,
+    "hintPrefix": "低于",
+    "hintHighlight": "100%",
+    "hintSuffix": "同类小游戏接入率"
+  },
+  "recentItems": [
+    "侧边栏复访",
+    "新游冷启计划",
+    "游戏中心推广图",
+    "游戏特征"
+  ],
+  "capabilityTypeTabs": [
+    { "key": "ops", "label": "运营能力" },
+    { "key": "dev", "label": "研发能力" },
+    { "key": "other", "label": "其他能力" }
+  ],
+  "categoryTabs": [
+    { "key": "all", "label": "全部" },
+    { "key": "recommended", "label": "推荐接入" },
+    { "key": "acquisition", "label": "用户获取" },
+    { "key": "retention", "label": "提升留存" },
+    { "key": "revenue", "label": "提升收入" }
+  ],
+  "recommendedBanner": {
+    "title": "推荐接入",
+    "subtitle": "新游戏接入热门 ，助力收益提升"
+  },
+  "defaultCapabilityType": "ops",
+  "cards": [
+    {
+      "id": "sidebar-revisit",
+      "title": "侧边栏复访",
+      "description": "自动拉起侧边栏培养用户复访路径",
+      "valueTags": [
+        { "text": "留存大幅提升", "useDefaultAvatars": true },
+        { "text": "提升收入 12%" }
+      ],
+      "connected": true,
+      "capabilityType": "ops",
+      "categories": ["all", "recommended", "retention"]
+    },
+    {
+      "id": "screen-record-share",
+      "title": "录屏分享",
+      "description": "支持玩家主动分享带游戏锚点的游戏视频，获得裂变流量",
+      "valueTags": [
+        { "text": "留存大幅提升", "useDefaultAvatars": true },
+        { "text": "社交裂变" }
+      ],
+      "connected": true,
+      "capabilityType": "ops",
+      "categories": ["all", "recommended", "acquisition"]
+    },
+    {
+      "id": "share-settings",
+      "title": "分享设置",
+      "description": "支持玩家分享游戏时自动拉起配置图文、分享口令等内容，获得社交裂变流量",
+      "valueTags": [{ "text": "提升收入 12%" }],
+      "connected": true,
+      "capabilityType": "ops",
+      "categories": ["all", "acquisition"]
+    },
+    {
+      "id": "cold-start",
+      "title": "新游冷启计划",
+      "description": "为新游和优质游戏配赠一定额度的免费曝光流量",
+      "valueTags": [
+        { "text": "留存大幅提升", "useDefaultAvatars": true },
+        { "text": "社交裂变" }
+      ],
+      "connected": true,
+      "capabilityType": "ops",
+      "categories": ["all", "recommended", "acquisition"]
+    },
+    {
+      "id": "game-center-banner",
+      "title": "游戏中心推广图",
+      "description": "游戏进入头条信息流推荐位的展示卡片",
+      "valueTags": [{ "text": "提升收入 12%" }],
+      "connected": true,
+      "capabilityType": "ops",
+      "categories": ["all", "acquisition"]
+    },
+    {
+      "id": "search-keyword",
+      "title": "搜索关键词",
+      "description": "配置搜索相关内容，获取更多场景的搜索曝光量",
+      "valueTags": [{ "text": "提升收入 12%" }],
+      "connected": false,
+      "capabilityType": "ops",
+      "categories": ["all", "acquisition"]
+    },
+    {
+      "id": "search-result-image",
+      "title": "搜索结果图",
+      "description": "搜索场景下游戏内容形象展示，或进行活动运营",
+      "valueTags": [{ "text": "提升收入 12%" }],
+      "connected": true,
+      "capabilityType": "ops",
+      "categories": ["all", "acquisition"]
+    },
+    {
+      "id": "game-feature",
+      "title": "游戏特征",
+      "description": "小游戏精准触达用户的“大杀器”",
+      "valueTags": [{ "text": "提升收入 12%" }],
+      "connected": true,
+      "capabilityType": "ops",
+      "categories": ["all", "recommended"]
+    },
+    {
+      "id": "capcut-template",
+      "title": "剪映视频模版",
+      "description": "有效提升录屏内容分发质量",
+      "valueTags": [{ "text": "提升收入 12%" }],
+      "connected": true,
+      "capabilityType": "ops",
+      "categories": ["all", "revenue"]
+    },
+    {
+      "id": "version-copy",
+      "title": "版本推广文案",
+      "description": "呈现版本热点，吸引更多玩家",
+      "valueTags": [{ "text": "提升收入 12%" }],
+      "connected": true,
+      "capabilityType": "ops",
+      "categories": ["all", "retention"]
+    },
+    {
+      "id": "game-site",
+      "title": "游戏站",
+      "description": "提升用户留存，支持更多流量分发渠道",
+      "valueTags": [{ "text": "提升留存" }],
+      "connected": true,
+      "capabilityType": "ops",
+      "categories": ["all", "retention"]
+    },
+    {
+      "id": "loading-image",
+      "title": "游戏加载图",
+      "description": "提升用户留存，支持更多流量分发渠道",
+      "valueTags": [{ "text": "提升收入 12%" }],
+      "connected": false,
+      "capabilityType": "ops",
+      "categories": ["all", "retention"]
+    },
+    {
+      "id": "user-subscribe",
+      "title": "用户订阅",
+      "description": "支持用户订阅游戏更新与活动通知",
+      "statusTag": "未接入",
+      "subCapabilities": ["订阅消息", "模板推送", "活动召回"],
+      "connected": false,
+      "capabilityType": "ops",
+      "categories": ["all", "recommended", "retention"]
+    },
+    {
+      "id": "in-game-popup",
+      "title": "游戏内弹窗",
+      "description": "在游戏内展示运营弹窗，提升转化与留存",
+      "operationTag": "运营",
+      "valueTags": [{ "text": "转化提升 8%" }],
+      "connected": true,
+      "capabilityType": "ops",
+      "categories": ["all", "revenue"]
+    },
+    {
+      "id": "version-gray",
+      "title": "版本灰度",
+      "description": "按人群灰度发布新版本能力",
+      "connected": true,
+      "capabilityType": "dev",
+      "categories": ["all"]
+    },
+    {
+      "id": "cloud-test",
+      "title": "云测试服务",
+      "description": "自动化兼容性测试与性能检测",
+      "connected": true,
+      "capabilityType": "dev",
+      "categories": ["all"]
+    },
+    {
+      "id": "compliance-review",
+      "title": "合规审核",
+      "description": "内容合规检测与审核流转",
+      "statusTag": "未接入",
+      "connected": false,
+      "capabilityType": "other",
+      "categories": ["all"]
+    },
+    {
+      "id": "data-report",
+      "title": "数据报表",
+      "description": "核心经营指标看板与导出",
+      "connected": true,
+      "capabilityType": "other",
+      "categories": ["all", "revenue"]
+    }
+  ]
+}

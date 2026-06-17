@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "douyin-open-platform-console-navigation",
+  "description": "控制台侧栏信息架构（站点目录树）。LLM 生成页面前对照此树判断：新页面 vs 迭代、功能归属分组、默认页面模版。",
+  "source": ["sidebar-screenshots", "references/LayoutSpec.md"],
+  "updatedAt": "2026-06-16",
+  "templateEnum": ["Dashboard", "InfoQuery", "CapabilityIntro", "InfoInput", "Modal"],
+  "decisionRules": {
+    "iterationVsNew": "若需求功能域能匹配到某个 leaf(menu) → 迭代该 leaf 对应页面；否则为新页面。",
+    "placement": "新页面按功能性质匹配 group：数据分析→data；平台能力/变现→capability/commercialization；配置→development/settings；列表治理→management。",
+    "templateSelection": "优先用 leaf.template；新页面用所属 group.defaultTemplate，再按对应 references/*.md 细分变体。",
+    "newGroup": "功能与所有 group 均不相关时才新增一级分组，且必须先经用户确认。",
+    "sameCapabilitySubpage": "同一能力的新功能优先以 Tab/子页 形式挂入既有 leaf，而非新增 leaf。"
+  },
+  "tree": [
+    {
+      "id": "overview",
+      "label": "总览",
+      "labelEn": "Overview",
+      "route": "/console/overview",
+      "defaultTemplate": "Dashboard",
+      "singlePage": true,
+      "children": []
+    },
+    {
+      "id": "management",
+      "label": "管理",
+      "labelEn": "Management",
+      "route": "/console/management",
+      "defaultTemplate": "InfoQuery",
+      "children": [
+        { "id": "version-management", "label": "版本管理", "labelEn": "Version Management", "route": "/console/management/version", "template": "InfoQuery", "desc": "版本列表、提审、上下线记录" },
+        { "id": "user-feedback", "label": "用户反馈", "labelEn": "User Feedback", "route": "/console/management/feedback", "template": "InfoQuery", "desc": "反馈工单列表、处理状态" }
+      ]
+    },
+    {
+      "id": "data",
+      "label": "数据",
+      "labelEn": "Data",
+      "route": "/console/data",
+      "defaultTemplate": "Dashboard",
+      "children": [
+        { "id": "user-analysis", "label": "用户分析", "labelEn": "User Analysis", "route": "/console/data/user", "template": "Dashboard", "desc": "用户规模、留存、画像看板" },
+        { "id": "growth-analysis", "label": "增长分析", "labelEn": "Growth Analysis", "route": "/console/data/growth", "template": "Dashboard", "desc": "拉新、转化、渠道增长看板" },
+        { "id": "performance-analysis", "label": "性能分析", "labelEn": "Performance Analysis", "route": "/console/data/performance", "template": "Dashboard", "desc": "性能指标看板、机型档位筛选、性能预警", "implementedBy": ["workspace/性能预警与看板优化.html"] },
+        { "id": "custom-analysis", "label": "自定义分析", "labelEn": "Custom Analysis", "route": "/console/data/custom", "template": "Dashboard", "desc": "自定义指标 / 维度看板" }
+      ]
+    },
+    {
+      "id": "capability",
+      "label": "能力",
+      "labelEn": "Capability",
+      "route": "/console/capability",
+      "defaultTemplate": "CapabilityIntro",
+      "children": [
+        { "id": "capability-center", "label": "能力中心", "labelEn": "Capability Center", "route": "/console/capability/center", "template": "CapabilityIntro", "desc": "平台能力总览与各能力介绍/接入（如「全端经营-App」）", "implementedBy": ["workspace/全端经营-能力介绍.html", "workspace/全端经营-App接入.html"] },
+        { "id": "publisher-program", "label": "发行人计划", "labelEn": "Publisher Program", "route": "/console/capability/publisher", "template": "CapabilityIntro", "desc": "发行人计划能力介绍与接入" },
+        { "id": "ad-delivery", "label": "广告投放", "labelEn": "Ad Delivery", "route": "/console/capability/ad-delivery", "template": "CapabilityIntro", "desc": "广告投放能力介绍与配置" },
+        { "id": "coin-incentive", "label": "金币激励", "labelEn": "Coin Incentive", "route": "/console/capability/coin-incentive", "template": "CapabilityIntro", "desc": "金币激励能力介绍与配置" },
+        { "id": "customer-service", "label": "客服", "labelEn": "Customer Service", "route": "/console/capability/customer-service", "template": "InfoQuery", "desc": "客服能力 / 会话与工单管理" }
+      ]
+    },
+    {
+      "id": "commercialization",
+      "label": "商业化",
+      "labelEn": "Commercialization",
+      "route": "/console/commercialization",
+      "defaultTemplate": "CapabilityIntro",
+      "children": [
+        { "id": "traffic-monetization", "label": "流量主", "labelEn": "Traffic Monetization", "route": "/console/commercialization/traffic", "template": "CapabilityIntro", "desc": "流量主开通、广告位与收益" },
+        { "id": "virtual-payment", "label": "虚拟支付", "labelEn": "Virtual Payment", "route": "/console/commercialization/virtual-payment", "template": "Dashboard", "desc": "虚拟支付数据、支付能力配置" }
+      ]
+    },
+    {
+      "id": "development",
+      "label": "开发",
+      "labelEn": "Development",
+      "route": "/console/development",
+      "defaultTemplate": "InfoInput",
+      "children": [
+        { "id": "development-settings", "label": "开发设置", "labelEn": "Development Settings", "route": "/console/development/settings", "template": "InfoInput", "desc": "开发密钥、回调、SDK 等配置表单" },
+        { "id": "cloud-testing-service", "label": "云测试服务", "labelEn": "Cloud Testing Service", "route": "/console/development/cloud-testing", "template": "CapabilityIntro", "desc": "云真机测试能力介绍与任务管理" }
+      ]
+    },
+    {
+      "id": "settings",
+      "label": "设置",
+      "labelEn": "Settings",
+      "route": "/console/settings",
+      "defaultTemplate": "InfoInput",
+      "children": [
+        { "id": "basic-settings", "label": "基础设置", "labelEn": "Basic Settings", "route": "/console/settings/basic", "template": "InfoInput", "desc": "应用基础信息、成员与权限配置表单" }
+      ]
+    }
+  ]
+}

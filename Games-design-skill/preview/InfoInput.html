@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>页面标题 — 信息录入</title>
+  <link rel="stylesheet" href="../assets/layout-shell.css" />
+  <style>
+    :root {
+      --primary: #1c5cfb;
+      --primary-light: #edf3ff;
+      --primary-bg-nav: #eaf5ff;
+      --text-0: #1c1f23;
+      --text-1: #171a1c;
+      --text-2: rgba(28, 31, 35, 0.6);
+      --text-3: rgba(23, 26, 28, 0.45);
+      --text-disabled: #888d92;
+      --danger: #f93920;
+      --bg-page: #f9f9f9;
+      --bg-white: #ffffff;
+      --tab-line-border: rgba(28, 31, 35, 0.08);
+      --fill-muted: rgba(46, 50, 56, 0.05);
+      --font: "PingFang SC", -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif;
+      --header-h: 60px;
+      --sidebar-w: 272px;
+      --content-w: 1072px;
+      --radius-card: 12px;
+      --radius-sm: 3px;
+      --spacing-loose: 24px;
+      --preview-card-width: 330px;
+      --form-column-max-width: calc(100% - var(--preview-card-width) - var(--spacing-loose));
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--text-0);
+    }
+
+    /* Figma 1732:122528：信息输入 */
+    /* 固定底栏留白；padding-top 由 layout-shell.css 提供 */
+    .content-area {
+      padding-bottom: 96px;
+    }
+    .main {
+      max-width: var(--content-w);
+      margin: 0 auto;
+      padding: 0 0 48px;
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      height: 24px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 20px;
+    }
+    .breadcrumb a, .breadcrumb .sep { color: var(--text-2); text-decoration: none; }
+    .breadcrumb .sep { margin: 0 4px; }
+    .breadcrumb .current { color: var(--text-0); }
+
+    /* Figma 1732:122536 / 2173:26619：白底卡片 12px 圆角 */
+    .card {
+      background: var(--bg-white);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .card.form-card {
+      flex: 1;
+      min-width: 0;
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .form-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    /* Figma 2286:31571：信息标题 ↔ 字段组 gap 24px */
+    .form-section {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .form-section.is-hidden { display: none !important; }
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+      color: var(--text-0);
+      margin: 0;
+    }
+    .form-row.no-preview .card.form-card {
+      max-width: 100%;
+    }
+    .form-row.no-preview .form-control-col,
+    .form-row.no-preview .form-body {
+      max-width: var(--form-column-max-width);
+    }
+    .form-header {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .form-title {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 24px;
+      color: var(--text-0);
+    }
+    .form-desc {
+      color: var(--text-2);
+      font-size: 14px;
+      line-height: 20px;
+    }
+    /* Figma 1732:122546：元信息行 */
+    .meta-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .meta-item {
+      display: inline-flex;
+      align-items: flex-start;
+      color: var(--text-2);
+      font-size: 14px;
+      line-height: 20px;
+    }
+    .meta-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .meta-icon svg,
+    .meta-icon img {
+      display: block;
+      width: 16px;
+      height: 16px;
+    }
+    .meta-item-text {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .meta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--primary);
+      font-weight: 500;
+      line-height: 20px;
+      text-decoration: none;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .meta-link .meta-icon {
+      margin-top: 0;
+    }
+    .form-divider {
+      border: none;
+      border-top: 1px solid #e6e9ea;
+      margin: 0;
+    }
+    .form-body {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .form-cell.is-hidden,
+    .preview-card.is-hidden,
+    .form-footer.is-hidden,
+    .meta-item.is-hidden,
+    .meta-link.is-hidden {
+      display: none !important;
+    }
+    .form-cell {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .form-cell.is-center { align-items: center; }
+    .form-label-col {
+      width: 171px;
+      flex-shrink: 0;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+    }
+    .form-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      color: var(--text-0);
+      line-height: 20px;
+    }
+    .form-label .req { color: var(--danger); font-weight: 600; }
+    .form-label .label-help {
+      display: inline-flex;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    .form-label .label-help svg,
+    .form-label .label-help img {
+      display: block;
+      width: 16px;
+      height: 16px;
+    }
+    .form-control-col {
+      flex: 1;
+      min-width: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .field-hint {
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--text-2);
+    }
+    .field-error {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      line-height: 16px;
+      color: #f64f4f;
+    }
+    .field-error .error-icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      display: inline-flex;
+    }
+    .field-error .error-icon svg,
+    .field-error .error-icon img {
+      display: block;
+      width: 14px;
+      height: 14px;
+    }
+    .ctrl-suffix-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .ctrl-suffix-wrap .ctrl {
+      padding-right: 32px;
+    }
+    .ctrl-suffix-icon {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 32px;
+      pointer-events: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ctrl-suffix-icon svg,
+    .ctrl-suffix-icon img {
+      display: block;
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      min-height: 16px;
+      flex-shrink: 0;
+    }
+    .ctrl {
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: var(--fill-muted);
+      border: 1px solid transparent;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text-0);
+      width: 100%;
+    }
+    .ctrl::placeholder { color: var(--text-2); }
+    .ctrl-input { padding: 5px 12px; }
+    .ctrl-select {
+      padding: 0 32px 0 12px;
+      appearance: none;
+      color: var(--text-2);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%232E3238' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+    .ctrl-select.has-search {
+      padding-left: 36px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%232E3238' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Ccircle cx='7' cy='7' r='4.5' stroke='rgba%2828%2C31%2C35%2C0.35%29' stroke-width='1.5'/%3E%3Cpath stroke='rgba%2828%2C31%2C35%2C0.35%29' stroke-width='1.5' stroke-linecap='round' d='M10.5 10.5L14 14'/%3E%3C/svg%3E");
+      background-position: right 8px center, 12px center;
+    }
+    .ctrl-textarea {
+      min-height: 116px;
+      height: auto;
+      padding: 5px 12px 28px;
+      resize: none;
+      line-height: 20px;
+    }
+    .input-with-counter,
+    .textarea-wrap {
+      width: 100%;
+    }
+    .input-with-counter {
+      position: relative;
+    }
+    .input-with-counter .counter {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      color: var(--text-2);
+      pointer-events: none;
+    }
+    .textarea-wrap {
+      position: relative;
+    }
+    .textarea-wrap .counter {
+      position: absolute;
+      right: 12px;
+      bottom: 5px;
+      font-size: 12px;
+      color: var(--text-2);
+    }
+    .number-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .number-row + .number-row { margin-top: 8px; }
+    .number-row .sub-label {
+      width: 56px;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+    .number-row .ctrl { width: 200px; flex: none; }
+    .number-row .suffix {
+      width: 24px;
+      text-align: right;
+      font-size: 14px;
+      margin-left: 0;
+    }
+    .date-range {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 32px;
+      padding: 0 32px 0 8px;
+      background: var(--fill-muted);
+      border-radius: var(--radius-sm);
+      gap: 4px;
+    }
+    .date-range span { flex: 1; color: var(--text-2); font-size: 14px; padding: 0 4px; }
+    .date-range .sep { flex: none; color: var(--text-2); }
+    .date-range-suffix {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .date-range-suffix svg,
+    .date-range-suffix img {
+      display: block;
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      min-height: 16px;
+      flex-shrink: 0;
+    }
+    .upload-card {
+      border: 2px dashed rgba(28, 31, 35, 0.08);
+      border-radius: var(--radius-sm);
+      background: var(--fill-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-2);
+      flex-shrink: 0;
+    }
+    .upload-card svg,
+    .upload-card img {
+      display: block;
+      width: 16px;
+      height: 16px;
+    }
+    .upload-card.size-1x1 { width: 96px; height: 96px; }
+    .upload-card.size-16x9 { width: 171px; height: 96px; max-width: 100%; }
+    /* Figma 2288:33517：Light Button「添加内容」宽随文案 */
+    .btn-light {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: auto;
+      height: 32px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--fill-muted);
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+      color: rgba(28, 31, 35, 0.8);
+      white-space: nowrap;
+      cursor: pointer;
+      font-family: inherit;
+      align-self: flex-start;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+    .btn-light .btn-light-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      display: block;
+    }
+    .choice-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      min-height: 32px;
+    }
+    .choice-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .choice-item input { display: none; }
+    .radio-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid rgba(28, 31, 35, 0.35);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .choice-item input:checked + .radio-dot {
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+    .choice-item input:checked + .radio-dot::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      background: #fff;
+    }
+    .check-box {
+      width: 16px;
+      height: 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(28, 31, 35, 0.35);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 10px;
+    }
+    .choice-item input:checked + .check-box {
+      background: #0064fa;
+      border-color: #0064fa;
+    }
+    .choice-item input:checked + .check-box::after { content: "✓"; }
+
+    .card.preview-card {
+      width: 330px;
+      flex-shrink: 0;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 646px;
+    }
+    .preview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .preview-title {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 24px;
+    }
+    .segmented.is-hidden { display: none !important; }
+    .segmented {
+      display: inline-flex;
+      background: var(--fill-muted);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      gap: 0;
+    }
+    .segmented button {
+      border: none;
+      background: transparent;
+      padding: 4px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 16px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: inherit;
+      color: rgba(28, 31, 35, 0.8);
+    }
+    .segmented button.active {
+      background: var(--bg-white);
+      color: var(--primary);
+    }
+    .preview-canvas {
+      width: 298px;
+      height: 530px;
+      background: var(--fill-muted);
+      border-radius: var(--radius-sm);
+      margin: 0 auto;
+    }
+    .preview-caption {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-0);
+      margin-top: 8px;
+    }
+
+    .form-footer {
+      position: fixed;
+      left: var(--sidebar-w);
+      right: 0;
+      bottom: 0;
+      height: 80px;
+      background: var(--bg-white);
+      border-top: 1px solid #e6e9ea;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 24px 48px 24px 80px;
+      z-index: 90;
+    }
+    .form-footer-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .btn-cancel {
+      min-width: 52px;
+      height: 32px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--fill-muted);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-0);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-submit {
+      min-width: 52px;
+      height: 32px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--primary);
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-left">
+    <!-- Logo -->
+    <div class="logo">
+      <svg viewBox="0 0 131.947 23.9475" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <path d="M67.0093 3.13313H131.947V21.855H67.0093L62.393 12.495L67.0093 3.13313Z" fill="var(--fill-0,black)"/>
+        <path d="M17.4119 4.79438C16.7741 4.3715 16.227 3.82119 15.8036 3.17666C15.3802 2.53214 15.0893 1.80677 14.9484 1.04438C14.8863 0.699849 14.8549 0.350303 14.8546 7.62939e-06H10.81V16.5C10.7745 17.3913 10.4032 18.2343 9.77334 18.8532C9.14351 19.4722 8.30378 19.8194 7.42915 19.8225C6.88075 19.822 6.34068 19.6856 5.85543 19.425C5.30704 19.1321 4.84762 18.6918 4.52683 18.1518C4.20604 17.6118 4.03611 16.9926 4.03539 16.3613C4.03685 15.4439 4.39493 14.5646 5.03112 13.9161C5.66731 13.2676 6.52968 12.9029 7.42915 12.9019C7.76853 12.9027 8.10579 12.9565 8.42925 13.0613V8.85938C8.098 8.81061 7.76383 8.78554 7.42915 8.78438C5.45942 8.78637 3.57091 9.58528 2.1781 11.0058C0.785291 12.4263 0.00195136 14.3524 4.50623e-06 16.3613C-0.00131226 17.5805 0.285971 18.7821 0.837446 19.8639C1.38892 20.9457 2.18829 21.8757 3.16763 22.575C4.41393 23.4699 5.90129 23.9493 7.42547 23.9475C9.39505 23.945 11.2833 23.146 12.676 21.7256C14.0687 20.3051 14.8522 18.3794 14.8546 16.3706V7.99688C16.4903 9.19636 18.4546 9.84053 20.4692 9.83813V5.71313C19.3842 5.71636 18.3218 5.39709 17.4119 4.79438Z" fill="var(--fill-0,black)"/>
+        <path d="M27.231 4.20004V17.6738C27.2391 17.7744 27.2262 17.8756 27.1933 17.9707C27.1603 18.0659 27.108 18.1529 27.0398 18.226C26.9716 18.2991 26.889 18.3567 26.7974 18.395C26.7059 18.4333 26.6074 18.4514 26.5085 18.4482H25.3337V20.385H27.0876C28.4241 20.385 29.2367 19.5919 29.2367 18.1538V4.20004H27.231ZM31.0917 11.85L25.3264 12.735V14.7263L31.0917 13.8413V11.85ZM31.0917 6.87378H25.3264V8.77129H31.0917V6.87378ZM40.0376 20.6794V4.20004H37.9583V20.6813L40.0376 20.6794ZM36.7559 12.075V10.1382L32.4191 9.34504V11.2988L36.7559 12.075ZM36.7559 7.92754V5.97191L32.4191 5.17879V7.13441L36.7559 7.92754ZM41.5359 13.7532L31.7774 14.6363V16.59L41.5359 15.7238V13.7532Z" fill="var(--fill-0,black)"/>
+        <path d="M59.8247 9.88876H43.378V11.7319H59.8247V9.88876ZM54.2414 10.3125H56.3905L56.9145 8.06251H54.7469L54.2414 10.3125ZM43.7218 7.27126H59.4809V5.42813H52.9213L52.6327 4.26751H50.4634L50.7704 5.42813H43.7218V7.27126ZM46.8858 10.3125H49.0349L48.5293 8.06251H46.3783L46.8858 10.3125ZM46.1504 17.4375H57.1369V15.75H46.1504V17.4375ZM47.2534 18.7275C47.1315 18.729 47.0139 18.6814 46.9262 18.5951C46.8384 18.5087 46.7875 18.3906 46.7846 18.2663V15.0225C46.7841 14.9595 46.7959 14.897 46.8193 14.8387C46.8427 14.7803 46.8771 14.7273 46.9207 14.6827C46.9643 14.638 47.0162 14.6026 47.0733 14.5786C47.1304 14.5545 47.1917 14.5423 47.2534 14.5425H55.964C56.0259 14.542 56.0873 14.5541 56.1447 14.578C56.202 14.602 56.2541 14.6373 56.2979 14.682C56.3417 14.7267 56.3763 14.7798 56.3998 14.8382C56.4233 14.8967 56.4351 14.9593 56.4346 15.0225V18.2663C56.4317 18.3909 56.3806 18.5094 56.2925 18.5958C56.2043 18.6822 56.0862 18.7295 55.964 18.7275H47.2534ZM46.5181 20.6025H56.6994C57.8741 20.6025 58.5084 19.9575 58.5084 18.7594V14.5894C58.5084 13.3913 57.8741 12.7463 56.6994 12.7463H46.507C45.3323 12.7463 44.6998 13.3913 44.6998 14.5894V18.7725C44.7035 19.9706 45.3359 20.6156 46.5107 20.6156L46.5181 20.6025Z" fill="var(--fill-0,black)"/>
+        <path d="M71.2433 7.74753H83.1104V6.07504H71.2433V7.74753ZM70.6329 12.9807H83.7244V11.3119H70.6366L70.6329 12.9807ZM71.0649 19.245C74.3502 17.7882 75.4367 14.5575 75.4367 9.84191V6.97504H73.7105V10.1288C73.7105 13.3294 73.2508 15.7875 71.0649 17.1207V19.245ZM79.4225 19.1832H81.1322V6.97504H79.4225V19.1832Z" fill="var(--fill-0,white)"/>
+        <path d="M92.218 11.4019C93.6446 10.6519 94.6263 8.86874 94.6263 5.74499H93.1004C93.1004 7.48874 92.832 8.41499 92.2235 9.09749L92.218 11.4019ZM94.2991 8.45999L98.6709 8.47499V6.89811H94.2991V8.45999ZM98.7996 19.1231V17.3625C96.3747 16.6125 94.8727 14.175 94.5455 11.1131H93.06C93.3928 15.33 95.5327 18.3337 98.7996 19.1231ZM92.4055 19.1231C95.2459 17.94 97.9374 15.9075 97.9374 9.49124V8.97561H96.3159V9.49124C96.3159 14.4056 94.6502 16.2562 92.4055 17.3025V19.1231ZM85.6529 19.0912C87.8241 17.7262 88.7617 15.0881 88.7617 12.1294V8.51249H87.1696V11.94C87.1696 14.1544 86.5905 15.8231 85.6529 16.6575V19.0912ZM90.1148 11.7787V16.86C90.1148 17.1337 89.9953 17.3156 89.7287 17.3156H88.8959V18.8625H90.3373C91.2455 18.8625 91.7363 18.3619 91.7363 17.4375V11.3569C91.7363 10.5525 91.2896 10.0987 90.5009 10.0987H88.008L87.9638 11.5237H89.8519C89.8861 11.5196 89.9207 11.5233 89.9532 11.5347C89.9857 11.5461 90.0153 11.5649 90.0397 11.5896C90.0641 11.6143 90.0827 11.6443 90.0941 11.6774C90.1055 11.7105 90.1095 11.7458 90.1056 11.7806L90.1148 11.7787ZM88.1367 7.97436H89.6681L89.1919 5.74499H87.5851L88.1367 7.97436ZM91.9735 7.09499H85.6529V8.65686H91.9735V7.09499Z" fill="var(--fill-0,white)"/>
+        <path d="M111.034 12.0844L112.062 8.41316H110.187L109.161 12.0844H111.034ZM102.782 12.0844H104.655L103.629 8.41316H101.756L102.782 12.0844ZM101.057 7.71566H112.924V6.07504H101.057V7.71566ZM100.454 14.4038H113.54V12.7669H100.454V14.4038ZM106.12 19.1775H107.859V6.92628H106.12V19.1775Z" fill="var(--fill-0,white)"/>
+        <path d="M128.161 9.63752L126.926 7.25627H125.038L126.658 10.5619L127.507 9.8794H117.528L120.427 5.8294H118.419L115.564 9.74252C115 10.5169 115.445 11.5481 116.59 11.5481H127.031C128.071 11.5388 128.65 10.575 128.161 9.63752ZM118.197 17.3869C118.097 17.3889 118 17.3507 117.928 17.2805C117.855 17.2104 117.812 17.1139 117.809 17.0119V14.7619C117.809 14.71 117.819 14.6585 117.838 14.6105C117.858 14.5625 117.886 14.5189 117.922 14.4822C117.958 14.4456 118.001 14.4167 118.048 14.3971C118.096 14.3775 118.146 14.3677 118.197 14.3682H125.588C125.638 14.3679 125.689 14.3779 125.736 14.3976C125.783 14.4173 125.825 14.4463 125.861 14.4829C125.897 14.5195 125.925 14.563 125.945 14.6109C125.964 14.6588 125.974 14.7101 125.974 14.7619V17.0119C125.97 17.1135 125.928 17.2097 125.856 17.2799C125.784 17.35 125.687 17.3884 125.588 17.3869H118.197ZM117.543 19.0557H126.242C127.209 19.0557 127.729 18.525 127.729 17.5388V14.2388C127.729 13.2525 127.209 12.7219 126.242 12.7219H117.552C116.585 12.7219 116.064 13.2525 116.064 14.2388V17.5294C116.055 18.5156 116.576 19.0463 117.552 19.0463L117.543 19.0557Z" fill="var(--fill-0,white)"/>
+      </svg>
+    </div>
+
+    <!-- Nav Tabs -->
+    <ul class="nav-tabs">
+      <li>首页</li>
+      <li>解决方案</li>
+      <li>客户案例</li>
+      <li>文档<span class="nav-chevron"><svg viewBox="0 0 6 4" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.83961 3.81916C5.62575 4.06028 5.27902 4.06028 5.06517 3.81916L3 1.49064L0.93483 3.81916C0.720975 4.06028 0.374247 4.06028 0.160391 3.81916C-0.0534638 3.57803 -0.0534638 3.18709 0.160391 2.94596L2.61278 0.180845C2.82664 -0.0602815 3.17336 -0.0602815 3.38722 0.180845L5.83961 2.94596C6.05346 3.18709 6.05346 3.57803 5.83961 3.81916Z" fill="rgba(0,0,0,0.75)"/></svg></span></li>
+      <li>学堂</li>
+      <li>社区</li>
+      <li>服务市场</li>
+      <li>支持与服务<span class="nav-chevron"><svg viewBox="0 0 6 4" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.83961 3.81916C5.62575 4.06028 5.27902 4.06028 5.06517 3.81916L3 1.49064L0.93483 3.81916C0.720975 4.06028 0.374247 4.06028 0.160391 3.81916C-0.0534638 3.57803 -0.0534638 3.18709 0.160391 2.94596L2.61278 0.180845C2.82664 -0.0602815 3.17336 -0.0602815 3.38722 0.180845L5.83961 2.94596C6.05346 3.18709 6.05346 3.57803 5.83961 3.81916Z" fill="rgba(0,0,0,0.75)"/></svg></span></li>
+      <li>合作平台<span class="nav-chevron"><svg viewBox="0 0 6 4" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.83961 3.81916C5.62575 4.06028 5.27902 4.06028 5.06517 3.81916L3 1.49064L0.93483 3.81916C0.720975 4.06028 0.374247 4.06028 0.160391 3.81916C-0.0534638 3.57803 -0.0534638 3.18709 0.160391 2.94596L2.61278 0.180845C2.82664 -0.0602815 3.17336 -0.0602815 3.38722 0.180845L5.83961 2.94596C6.05346 3.18709 6.05346 3.57803 5.83961 3.81916Z" fill="rgba(0,0,0,0.75)"/></svg></span></li>
+    </ul>
+  </div>
+
+  <div class="header-right">
+    <div class="search-input">
+      <span>输入关键词搜索</span>
+      <svg class="search-icon" viewBox="0 0 16 16" fill="none">
+        <circle cx="7" cy="7" r="4.5" stroke="rgba(0,0,0,0.4)" stroke-width="1.5"/>
+        <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="rgba(0,0,0,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="console-btn">控制台</span>
+    <div class="user-block">
+      <div class="user-bell">
+        <svg viewBox="0 0 15.1704 17.6667" fill="none" preserveAspectRatio="xMidYMid meet">
+          <path d="M0.262402 12.0529C-0.448745 13.1907 0.36928 14.6667 1.71107 14.6667H4.34468L4.34493 14.67H10.8255L10.8257 14.6667H13.4593C14.8011 14.6667 15.6191 13.1907 14.908 12.0529L13.9098 10.4558C13.4798 9.7679 13.2518 8.97299 13.2518 8.16176V6.5C13.2518 4.09178 11.7508 2.03676 9.63379 1.21544C9.23774 0.491194 8.46883 0 7.58518 0C6.70154 0 5.93262 0.491195 5.53657 1.21544C3.41959 2.03676 1.91851 4.09178 1.91851 6.5V8.16176C1.91851 8.973 1.69054 9.7679 1.26058 10.4558L0.262402 12.0529Z" fill="#262D34" fill-opacity="0.75"/>
+          <path d="M7.58521 17.6667C6.31268 17.6667 5.21098 16.9353 4.67748 15.87H10.4929C9.95943 16.9353 8.85773 17.6667 7.58521 17.6667Z" fill="#262D34" fill-opacity="0.75"/>
+        </svg>
+      </div>
+      <div class="user-badge">99+</div>
+      <div class="user-name-row">
+        <span>Sally07…</span>
+        <div class="user-chevron-wrap">
+          <svg viewBox="0 0 16 16" fill="none">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M11.7862 10.4255C11.501 10.747 11.0387 10.747 10.7536 10.4255L8.00002 7.32085L5.24646 10.4255C4.96132 10.747 4.49902 10.747 4.21388 10.4255C3.92874 10.104 3.92874 9.58278 4.21388 9.26128L7.48373 5.57446C7.76887 5.25296 8.23117 5.25296 8.51631 5.57446L11.7862 9.26128C12.0713 9.58278 12.0713 10.104 11.7862 10.4255Z" fill="#262D34"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== LAYOUT BODY ===== -->
+<div class="layout-body">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar-column">
+  <aside class="sidebar">
+
+    <!-- App Switcher -->
+    <div class="app-switcher">
+      <div class="app-switcher-info">
+        <div class="app-avatar">
+          <div class="avatar-bg" aria-hidden="true"></div>
+          <div class="avatar-overlay"></div>
+        </div>
+        <div class="app-meta">
+          <div class="app-name">航海王热血航线</div>
+          <div class="app-id-row">
+            <span class="app-id">AppID:32193237437…</span>
+            <svg class="copy-icon" viewBox="0 0 16 16" fill="none">
+              <path d="M4.33301 4.1432V2.60352C4.33301 2.08575 4.75273 1.66602 5.27051 1.66602H13.3955C13.9133 1.66602 14.333 2.08575 14.333 2.60352V10.7285C14.333 11.2463 13.9133 11.666 13.3955 11.666H11.8384" stroke="var(--stroke-0,#1C5CFB)" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10.7295 4.33398H2.60449C2.08673 4.33398 1.66699 4.75372 1.66699 5.27148V13.3965C1.66699 13.9143 2.08673 14.334 2.60449 14.334H10.7295C11.2473 14.334 11.667 13.9143 11.667 13.3965V5.27148C11.667 4.75372 11.2473 4.33398 10.7295 4.33398Z" stroke="var(--stroke-0,#1C5CFB)" stroke-width="1.33" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <svg class="switch-icon" viewBox="0 0 16 16" fill="none">
+        <defs><clipPath id="cp-sw"><rect width="16" height="16" fill="white"/></clipPath></defs>
+        <g clip-path="url(#cp-sw)">
+          <path d="M3.334 2.666L1.334 4.666L3.334 6.666" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12.666 9.334L14.666 11.334L12.666 13.334" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1.334 4.666H14.667" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1.334 11.334H14.667" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Nav Menu
+         data-group: group header id
+         data-parent: links child to group
+    -->
+    <nav class="nav-menu" id="navMenu">
+
+      <!-- 总览 (no children) -->
+      <div class="nav-group" data-group="overview" data-no-children>
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 44 44" fill="none" preserveAspectRatio="xMidYMid meet">
+              <rect x="2" y="2" width="40" height="40" rx="3" stroke="var(--stroke-0)" stroke-width="4" stroke-linejoin="round"/>
+              <rect x="10" y="10" width="8" height="8" stroke="var(--stroke-0)" stroke-width="4" stroke-linejoin="round"/>
+              <rect x="10" y="26" width="8" height="8" stroke="var(--stroke-0)" stroke-width="4" stroke-linejoin="round"/>
+              <path d="M26 26H34M26 34H34M26 10H34M26 18H34" stroke="var(--stroke-0)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">总览</span>
+        </div>
+      </div>
+
+      <!-- 管理 -->
+      <div class="nav-group" data-group="manage">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 16.7811 18.3016" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M15.9461 5.63188C15.9461 5.18028 15.7025 4.7638 15.3089 4.54241L9.00338 0.99553C8.62286 0.78149 8.15825 0.78149 7.77773 0.995531L1.47217 4.54241C1.07858 4.7638 0.835 5.18028 0.835 5.63187V12.6698C0.835 13.1213 1.07858 13.5378 1.47217 13.7592L7.77773 17.3061C8.15825 17.5201 8.62286 17.5201 9.00338 17.3061L15.3089 13.7592C15.7025 13.5378 15.9461 13.1213 15.9461 12.6698V5.63188Z" stroke="var(--stroke-0)" stroke-width="1.67"/>
+              <path d="M1.21787 5.10587L8.3906 9.15075M8.39053 16.7064V9.15082M15.4738 4.90082L8.39053 9.15082" stroke="var(--stroke-0)" stroke-width="1.67" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">管理</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children open" data-children="manage">
+        <div class="nav-item" data-item="版本管理"><span class="item-label">版本管理</span></div>
+        <div class="nav-item active" data-item="用户反馈"><span class="item-label">用户反馈</span></div>
+        <div class="nav-item" data-item="信用分"><span class="item-label">信用分</span></div>
+      </div>
+
+      <!-- 运营 -->
+      <div class="nav-group" data-group="operations">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 20 20" fill="none">
+              <g transform="translate(5.111,15.749)"><path d="M0.515 0.655C1.720 1.602 3.239 2.167 4.890 2.167C6.541 2.167 8.061 1.602 9.265 0.655" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+              <g transform="translate(2.082,3.265)"><path d="M5.833 0.797C2.938 1.686 0.833 4.382 0.833 7.569C0.833 8.371 0.967 9.141 1.212 9.860" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+              <g transform="translate(11.839,3.265)"><path d="M0.245 0.797C3.140 1.686 5.245 4.382 5.245 7.569C5.245 8.371 5.111 9.141 4.866 9.860" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+              <g transform="translate(12.917,12.082)"><path d="M5 2.917A2.083 2.083 0 112.917 0.833 2.083 2.083 0 015 2.917Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(1.251,12.082)"><path d="M5 2.917A2.083 2.083 0 112.917 0.833 2.083 2.083 0 015 2.917Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(7.082,0.832)"><path d="M5 2.917A2.083 2.083 0 112.917 0.833 2.083 2.083 0 015 2.917Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+            </svg>
+          </div>
+          <span class="nav-group-label">运营</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="operations">
+        <div class="nav-item" data-item="运营能力"><span class="item-label">运营能力</span></div>
+        <div class="nav-item" data-item="抖音开放能力"><span class="item-label">抖音开放能力</span></div>
+        <div class="nav-item" data-item="功能"><span class="item-label">功能</span></div>
+      </div>
+
+      <!-- 数据 -->
+      <div class="nav-group" data-group="data">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 17.5997 17.6003" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M5.73777 1.40749C4.75997 1.81295 3.88 2.40675 3.14311 3.14363C1.69541 4.59133 0.799992 6.59131 0.799992 8.80043C0.799992 13.2187 4.38168 16.8003 8.79991 16.8003C11.009 16.8003 13.009 15.9049 14.4567 14.4572C15.1936 13.7203 15.7874 12.8404 16.1928 11.8626" stroke="var(--stroke-0)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8.79975 8.79991H16.7997C16.7997 4.38168 13.218 0.799992 8.79975 0.799992L8.79975 8.79991Z" stroke="var(--stroke-0)" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">数据</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="data">
+        <div class="nav-item" data-item="用户分析"><span class="item-label">用户分析</span></div>
+        <div class="nav-item" data-item="性能分析"><span class="item-label">性能分析</span></div>
+        <div class="nav-item" data-item="自定义分析"><span class="item-label">自定义分析</span></div>
+      </div>
+
+      <!-- 商业化 -->
+      <div class="nav-group" data-group="commerce">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 18.67 18.7789" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M6.97343 5.57824L9.33437 8.41137L11.6953 5.57824" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M2.25158 4.63383C2.25158 4.63383 5.793 -0.796371 11.9314 1.32849C18.0699 3.45336 17.8338 9.59181 17.8338 9.59181" stroke="var(--stroke-0)" stroke-width="1.67" stroke-linecap="round"/>
+              <path d="M16.4172 14.0776C16.4172 14.0776 13.5841 19.2717 7.20955 17.6191C0.835 15.9664 0.835 9.35576 0.835 9.35576" stroke="var(--stroke-0)" stroke-width="1.67" stroke-linecap="round"/>
+              <path d="M6.50126 11.2445H12.1675M6.50126 8.41138H12.1675M9.33442 8.41138V14.0776" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">商业化</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="commerce">
+        <div class="nav-item" data-item="流量主"><span class="item-label">流量主</span></div>
+        <div class="nav-item" data-item="虚拟支付"><span class="item-label">虚拟支付</span></div>
+      </div>
+
+      <!-- 推广 -->
+      <div class="nav-group" data-group="promotion">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 19.9423 14.5" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M9.97122 9.33918C11.1287 9.33918 12.067 8.40378 12.067 7.24997C12.067 6.09617 11.1287 5.16082 9.97122 5.16082C8.81382 5.16082 7.87552 6.09617 7.87552 7.24997C7.87552 8.40378 8.81382 9.33918 9.97122 9.33918Z" stroke="var(--stroke-0)" stroke-width="1.5"/>
+              <path d="M6.2827 3.0553C3.82373 5.34704 3.82373 9.06263 6.2827 11.3544M13.6597 11.3544C16.1186 9.06263 16.1186 5.34704 13.6597 3.0553" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M3.45082 0.75C-0.150275 4.33986 -0.150275 10.1601 3.45082 13.75M16.4915 13.75C20.0926 10.1601 20.0926 4.33986 16.4915 0.75" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">推广</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="promotion">
+        <div class="nav-item" data-item="发行人计划"><span class="item-label">发行人计划</span></div>
+        <div class="nav-item" data-item="信息流投放"><span class="item-label">信息流投放</span></div>
+        <div class="nav-item" data-item="推广资金"><span class="item-label">推广资金</span></div>
+      </div>
+
+      <!-- 开发 -->
+      <div class="nav-group" data-group="develop">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 20 20" fill="none">
+              <g transform="translate(0.832,4.583)"><path d="M5.833 0.833L0.833 6.013L5.833 10.833" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(12.5,4.583)"><path d="M0.833 0.833L5.833 6.013L0.833 10.833" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(7.917,0.833)"><path d="M3.750 0.833L0.833 17.500" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+            </svg>
+          </div>
+          <span class="nav-group-label">开发</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="develop">
+        <div class="nav-item" data-item="开发设置"><span class="item-label">开发设置</span></div>
+      </div>
+
+      <!-- 设置 -->
+      <div class="nav-group" data-group="settings">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 18.3333 15.8333" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M13.3335 15L17.5 7.91667L13.3335 0.833333H5.00007L0.833333 7.91667L5.00007 15H13.3335Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linejoin="round"/>
+              <path d="M9.16667 10C10.3173 10 11.25 9.067 11.25 7.917C11.25 6.766 10.3173 5.833 9.16667 5.833C8.01607 5.833 7.08333 6.766 7.08333 7.917C7.08333 9.067 8.01607 10 9.16667 10Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">设置</span>
+        </div>
+        <!-- Figma Icon/Default 16×16，fill 朝上，JS 控制旋转方向 -->
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="settings">
+        <div class="nav-item" data-item="基础设置"><span class="item-label">基础设置</span></div>
+        <div class="nav-item" data-item="团队协作"><span class="item-label">团队协作</span></div>
+      </div>
+
+    </nav>
+  </aside>
+  </div><!-- sidebar-column -->
+
+    <div class="content-area">
+      <main class="main">
+        <nav class="breadcrumb" aria-label="面包屑">
+          <a href="#">一级页面</a><span class="sep">/</span>
+          <a href="#">二级页面</a><span class="sep">/</span>
+          <a href="#">三级页面</a><span class="sep">/</span>
+          <span class="current">四级页面</span>
+        </nav>
+
+        <div class="form-row">
+          <section class="card form-card" aria-label="信息填写">
+            <header class="form-header">
+              <h1 class="form-title" id="form-page-title">页面标题</h1>
+              <p class="form-desc" id="form-page-desc">一句话描述能力内容</p>
+              <div class="meta-row" id="form-meta-row">
+                <div class="meta-item" id="form-meta-access">
+                  <span class="meta-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.42389 1.06526C6.83966 1.07582 7.19971 1.35678 7.31103 1.75751L9.68233 10.7523L10.5702 7.7007C10.699 7.31455 11.0603 7.05409 11.4674 7.05409H14.3043C14.8266 7.05409 15.25 7.47747 15.25 7.99974C15.25 8.52201 14.8266 8.94539 14.3043 8.94539H12.149L10.4972 14.2885C10.3657 14.6831 9.99183 14.9454 9.57607 14.9348C9.1603 14.9243 8.80025 14.6433 8.68893 14.2426L6.31763 5.24776L5.42971 8.29878C5.301 8.68493 4.93963 8.94539 4.53259 8.94539L1.69563 8.9457C1.17336 8.9457 0.74998 8.52231 0.74998 8.00004C0.74998 7.47777 1.17336 7.05439 1.69563 7.05439L3.851 7.05409L5.50275 1.71156C5.63427 1.31701 6.00813 1.05469 6.42389 1.06526Z" fill="rgba(28,31,35,0.6)"/></svg>
+                  </span>
+                  <span class="meta-item-text">
+                    <span id="form-meta-access-label">当前接入:</span>
+                    <span id="form-meta-capability-name">能力名称</span>
+                  </span>
+                </div>
+                <a class="meta-link" id="form-meta-guide" href="#">
+                  <span class="meta-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9.05762 0.666667C9.41109 0.66678 9.75005 0.807344 10 1.05729L13.6094 4.66667C13.8593 4.91661 13.9999 5.25557 14 5.60905V14C14 14.7363 13.4032 15.3338 12.667 15.334H3.33301C2.59678 15.3338 2.00018 14.7363 2 14V2C2.00018 1.26389 2.59689 0.667175 3.33301 0.666667H9.05762ZM3.33301 14H12.667V6H9.33301C8.96508 5.99983 8.66717 5.70192 8.66699 5.33398V2H3.33301V14ZM8.66699 10.6667C8.85083 10.6669 8.99982 10.8159 9 11V11.6667C9 11.8507 8.85094 11.9995 8.66699 12H5.33301C5.14906 11.9995 5 11.8507 5 11.6667V11C5.00018 10.8162 5.14917 10.6672 5.33301 10.6667H8.66699ZM8.66699 8C8.85083 8.00018 8.99982 8.14917 9 8.33301V9C9 9.18399 8.85094 9.33284 8.66699 9.33301H5.33301C5.14906 9.33284 5 9.18399 5 9V8.33301C5.00018 8.14917 5.14917 8.00018 5.33301 8H8.66699ZM10 4.66667H11.7246L10 2.94206V4.66667Z" fill="#1C5CFB"/></svg>
+                  </span>
+                  <span id="form-meta-guide-text">能力接入指引</span>
+                </a>
+              </div>
+            </header>
+            <hr class="form-divider" />
+            <div class="form-sections" id="form-sections">
+            <section class="form-section" data-section="default">
+            <div class="form-body" id="form-body">
+              <div class="form-cell is-center" data-field="infoName">
+                <div class="form-label-col"><span class="form-label" data-role="label">信息名称</span></div>
+                <div class="form-control-col"><span data-role="value">信息名称</span></div>
+              </div>
+              <div class="form-cell" data-field="numberInput">
+                <div class="form-label-col"><span class="form-label" data-role="label">数字输入框<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <div data-role="number-rows"></div>
+                  <div class="field-error" data-role="error">
+                    <span class="error-icon" aria-hidden="true">
+                      <svg viewBox="0 0 14 14" width="14" height="14" fill="none" aria-hidden="true">
+                        <circle cx="7" cy="7" r="6" fill="#F93920"/>
+                        <path d="M7 4.2V7.4M7 9.1H7.01" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
+                      </svg>
+                    </span>
+                    <span data-role="error-text">错误描述文本</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-cell" data-field="select">
+                <div class="form-label-col"><span class="form-label" data-role="label">选择框<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <select class="ctrl ctrl-select"><option>请选择</option></select>
+                  <span class="field-hint" data-role="hint">选择框描述文本</span>
+                </div>
+              </div>
+              <div class="form-cell" data-field="searchSelect">
+                <div class="form-label-col"><span class="form-label" data-role="label">搜索框<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <select class="ctrl ctrl-select has-search"><option>请选择</option></select>
+                  <span class="field-hint" data-role="hint">搜索框描述文本</span>
+                </div>
+              </div>
+              <div class="form-cell" data-field="textInput">
+                <div class="form-label-col"><span class="form-label" data-role="label">输入框<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <div class="input-with-counter"><input class="ctrl ctrl-input" type="text" data-role="control" placeholder="请输入内容" /><span class="counter" data-role="counter">0/30</span></div>
+                  <span class="field-hint" data-role="hint">输入框描述文本</span>
+                </div>
+              </div>
+              <div class="form-cell" data-field="textarea">
+                <div class="form-label-col"><span class="form-label" data-role="label">文本输入框<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <div class="textarea-wrap"><textarea class="ctrl ctrl-textarea" data-role="control" placeholder="请输入内容"></textarea><span class="counter" data-role="counter">0/100</span></div>
+                  <span class="field-hint" data-role="hint">文本输入框描述文本</span>
+                </div>
+              </div>
+              <div class="form-cell" data-field="timePicker">
+                <div class="form-label-col"><span class="form-label" data-role="label">时间筛选<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <div class="ctrl-suffix-wrap">
+                    <input class="ctrl ctrl-input" type="text" data-role="control" placeholder="请选择时间" />
+                    <span class="ctrl-suffix-icon" aria-hidden="true"></span>
+                  </div>
+                  <span class="field-hint" data-role="hint">时间筛选描述文本</span>
+                </div>
+              </div>
+              <div class="form-cell" data-field="datePicker">
+                <div class="form-label-col"><span class="form-label" data-role="label">日期筛选<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <div class="ctrl-suffix-wrap">
+                    <input class="ctrl ctrl-input" type="text" data-role="control" placeholder="请选择日期" />
+                    <span class="ctrl-suffix-icon" aria-hidden="true"></span>
+                  </div>
+                  <span class="field-hint" data-role="hint">日期筛选描述文本</span>
+                </div>
+              </div>
+              <div class="form-cell" data-field="dateRange">
+                <div class="form-label-col"><span class="form-label" data-role="label">日期范围筛选<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <div class="date-range" data-role="date-range">
+                    <span data-role="start">开始日期</span>
+                    <span class="sep">~</span>
+                    <span data-role="end">结束日期</span>
+                    <span class="date-range-suffix" aria-hidden="true"></span>
+                  </div>
+                  <span class="field-hint" data-role="hint">日期筛选描述文本</span>
+                </div>
+              </div>
+              <div class="form-cell" data-field="uploadSquare">
+                <div class="form-label-col"><span class="form-label" data-role="label">示例图片<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <div class="upload-card size-1x1" data-role="upload" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true"><path d="M8 3.33333V12.6667M3.33333 8H12.6667" stroke="rgba(28,31,35,0.6)" stroke-width="1.33333" stroke-linecap="round"/></svg>
+                  </div>
+                  <span class="field-hint" data-role="hint">示例图片描述文本，比例：1:1</span>
+                </div>
+              </div>
+              <div class="form-cell" data-field="uploadWide">
+                <div class="form-label-col"><span class="form-label" data-role="label">示例图片<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <div class="upload-card size-16x9" data-role="upload" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true"><path d="M8 3.33333V12.6667M3.33333 8H12.6667" stroke="rgba(28,31,35,0.6)" stroke-width="1.33333" stroke-linecap="round"/></svg>
+                  </div>
+                  <span class="field-hint" data-role="hint">示例图片描述文本，比例：16:9</span>
+                </div>
+              </div>
+              <div class="form-cell" data-field="addButton">
+                <div class="form-label-col"><span class="form-label" data-role="label">添加按钮<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <button type="button" class="btn-light">
+                    <svg class="btn-light-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M8 3.333v9.334M3.333 8h9.334" stroke="currentColor" stroke-width="1.33" stroke-linecap="round"/>
+                    </svg>
+                    <span data-role="btn-text">添加内容</span>
+                  </button>
+                  <span class="field-hint" data-role="hint">添加描述文本</span>
+                </div>
+              </div>
+              <div class="form-cell" data-field="radio">
+                <div class="form-label-col"><span class="form-label" data-role="label">单选框<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <div class="choice-group" data-role="options" role="radiogroup"></div>
+                  <span class="field-hint" data-role="hint">选项描述文本</span>
+                </div>
+              </div>
+              <div class="form-cell" data-field="checkbox">
+                <div class="form-label-col"><span class="form-label" data-role="label">复选框<span class="req" data-role="req">*</span></span></div>
+                <div class="form-control-col">
+                  <div class="choice-group" data-role="options"></div>
+                  <span class="field-hint" data-role="hint">选项描述文本</span>
+                </div>
+              </div>
+            </div>
+            </section>
+            </div>
+          </section>
+
+          <aside class="card preview-card" id="form-preview" aria-label="预览">
+            <div class="preview-head">
+              <h2 class="preview-title" id="form-preview-title">预览图</h2>
+              <div class="segmented" id="form-preview-tabs" role="tablist"></div>
+            </div>
+            <div class="preview-canvas" aria-hidden="true"></div>
+            <p class="preview-caption" id="form-preview-caption">预览图片标题&amp;介绍</p>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div><!-- layout-body -->
+
+  <footer class="form-footer" id="form-footer">
+    <div class="form-footer-actions">
+      <button type="button" class="btn-cancel" id="form-btn-cancel">取消</button>
+      <button type="button" class="btn-submit" id="form-btn-submit">提交</button>
+    </div>
+  </footer>
+
+  <script>
+(function () {
+  const menu = document.getElementById('navMenu');
+  if (!menu) return;
+
+  function syncArrow(groupEl) {
+    const id = groupEl.dataset.group;
+    const children = menu.querySelector('[data-children="' + id + '"]');
+    const arrow = groupEl.querySelector('.nav-arrow');
+    if (!children || !arrow) return;
+    const isOpen = children.classList.contains('open');
+    arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+
+  menu.querySelectorAll('.nav-group[data-group]').forEach(function (g) { syncArrow(g); });
+
+  menu.addEventListener('click', function (e) {
+    const group = e.target.closest('.nav-group[data-group]');
+    const item = e.target.closest('.nav-item[data-item]');
+
+    if (group) {
+      const id = group.dataset.group;
+      if (group.dataset.noChildren !== undefined) {
+        menu.querySelectorAll('.nav-item.active').forEach(function (i) { i.classList.remove('active'); });
+        menu.querySelectorAll('.nav-group.active').forEach(function (g) { g.classList.remove('active'); });
+        group.classList.add('active');
+        return;
+      }
+      const children = menu.querySelector('[data-children="' + id + '"]');
+      if (!children) return;
+      children.classList.toggle('open');
+      syncArrow(group);
+      return;
+    }
+
+    if (item) {
+      menu.querySelectorAll('.nav-item.active').forEach(function (i) { i.classList.remove('active'); });
+      item.classList.add('active');
+    }
+  });
+})();
+</script>
+
+  <script>
+    /**
+     * 信息录入配置（默认与画板 1732:122528 单一模块一致）
+     *
+     * preview.show: false        → 无预览，表单白卡全宽
+     * preview.tabs.length <= 1  → 不渲染右上角分段 Tab
+     * sections[]                → 分层结构（2286:31417）；省略时单块无「信息标题」
+     * fields.<key>.show: false  → 隐藏对应表单项
+     */
+    var FORM_FIELD_CONFIG = {
+      variant: "single",
+      page: {
+        title: "页面标题",
+        description: "一句话描述能力内容"
+      },
+      meta: {
+        showAccess: true,
+        showGuide: true,
+        accessLabel: "当前接入:",
+        capabilityName: "能力名称",
+        guideText: "能力接入指引",
+        guideHref: "#"
+      },
+      preview: {
+        show: true,
+        title: "预览图",
+        tabs: ["选项一", "选项二"],
+        caption: "预览图片标题&介绍"
+      },
+      footer: {
+        show: true,
+        cancelText: "取消",
+        submitText: "提交"
+      },
+      fields: {
+        infoName: { show: true, label: "信息名称", value: "信息名称" },
+        numberInput: {
+          show: true,
+          label: "数字输入框",
+          required: true,
+          help: true,
+          showError: true,
+          errorText: "错误描述文本",
+          rows: [
+            { label: "原价", suffix: "元", value: "0" },
+            { label: "现价", suffix: "元", value: "0" }
+          ]
+        },
+        select: { show: true, label: "选择框", required: true, placeholder: "请选择", hint: "选择框描述文本" },
+        searchSelect: { show: true, label: "搜索框", required: true, placeholder: "请选择", hint: "搜索框描述文本" },
+        textInput: { show: true, label: "输入框", required: true, placeholder: "请输入内容", maxLength: 30, hint: "输入框描述文本" },
+        textarea: { show: true, label: "文本输入框", required: true, placeholder: "请输入内容", maxLength: 100, hint: "文本输入框描述文本" },
+        timePicker: { show: true, label: "时间筛选", required: true, placeholder: "请选择时间", hint: "时间筛选描述文本" },
+        datePicker: { show: true, label: "日期筛选", required: true, placeholder: "请选择日期", hint: "日期筛选描述文本" },
+        dateRange: { show: true, label: "日期范围筛选", required: true, startPlaceholder: "开始日期", endPlaceholder: "结束日期", hint: "日期筛选描述文本" },
+        uploadSquare: { show: true, label: "示例图片", required: true, sizeClass: "size-1x1", hint: "示例图片描述文本，比例：1:1" },
+        uploadWide: { show: true, label: "示例图片", required: true, sizeClass: "size-16x9", hint: "示例图片描述文本，比例：16:9" },
+        addButton: { show: true, label: "添加按钮", required: true, buttonText: "添加内容", hint: "添加描述文本" },
+        radio: {
+          show: true,
+          label: "单选框",
+          required: true,
+          hint: "选项描述文本",
+          name: "demo-radio",
+          options: [
+            { label: "选项一", value: "1", checked: true },
+            { label: "选项二", value: "2" },
+            { label: "选项二", value: "3" },
+            { label: "选项二", value: "4" }
+          ]
+        },
+        checkbox: {
+          show: true,
+          label: "复选框",
+          required: true,
+          hint: "选项描述文本",
+          options: [
+            { label: "选择框一", value: "1", checked: true },
+            { label: "选择框二", value: "2" },
+            { label: "选择框三", value: "3" },
+            { label: "选择框四", value: "4" }
+          ]
+        }
+      },
+      sections: null
+    };
+
+    var LAYERED_SECTIONS = [
+      {
+        key: "basic",
+        show: true,
+        title: "信息标题",
+        fields: ["infoName", "numberInput", "select", "searchSelect", "textInput", "textarea"]
+      },
+      {
+        key: "advanced",
+        show: true,
+        title: "信息标题",
+        fields: ["timePicker", "datePicker", "dateRange", "uploadSquare", "uploadWide",
+                 "addButton", "radio", "checkbox"]
+      }
+    ];
+
+    var ICON_PLUS_SVG =
+      '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<path d="M8 3.33333V12.6667M3.33333 8H12.6667" stroke="rgba(28,31,35,0.6)" stroke-width="1.33333" stroke-linecap="round"/></svg>';
+    var ICON_CALENDAR_SVG =
+      '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<g transform="translate(1.3333333333 1.3333333333) scale(0.5555555556)">' +
+      '<path fill-rule="evenodd" clip-rule="evenodd" d="M4 20V8H20V20H4ZM2 4C2 2.89543 2.89543 2 4 2H20C21.1046 2 22 2.89543 22 4V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V4ZM6 10.5C6 10.2239 6.22386 10 6.5 10H8.5C8.77614 10 9 10.2239 9 10.5V12.5C9 12.7761 8.77614 13 8.5 13H6.5C6.22386 13 6 12.7761 6 12.5V10.5ZM6.5 15C6.22386 15 6 15.2239 6 15.5V17.5C6 17.7761 6.22386 18 6.5 18H8.5C8.77614 18 9 17.7761 9 17.5V15.5C9 15.2239 8.77614 15 8.5 15H6.5ZM10.5 10.5C10.5 10.2239 10.7239 10 11 10H13C13.2761 10 13.5 10.2239 13.5 10.5V12.5C13.5 12.7761 13.2761 13 13 13H11C10.7239 13 10.5 12.7761 10.5 12.5V10.5ZM11 15C10.7239 15 10.5 15.2239 10.5 15.5V17.5C10.5 17.7761 10.7239 18 11 18H13C13.2761 18 13.5 17.7761 13.5 17.5V15.5C13.5 15.2239 13.2761 15 13 15H11ZM15 10.5C15 10.2239 15.2239 10 15.5 10H17.5C17.7761 10 18 10.2239 18 10.5V12.5C18 12.7761 17.7761 13 17.5 13H15.5C15.2239 13 15 12.7761 15 12.5V10.5ZM15.5 15C15.2239 15 15 15.2239 15 15.5V17.5C15 17.7761 15.2239 18 15.5 18H17.5C17.7761 18 18 17.7761 18 17.5V15.5C18 15.2239 17.7761 15 17.5 15H15.5Z" fill="rgba(28,31,35,0.35)"/></g></svg>';
+    var ICON_CLOCK_SVG =
+      '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<g transform="translate(1.3333333333 1.3333333333) scale(0.5555555556)">' +
+      '<path fill-rule="evenodd" clip-rule="evenodd" d="M12 23C18.0751 23 23 18.0751 23 12C23 5.92487 18.0751 1 12 1C5.92487 1 1 5.92487 1 12C1 18.0751 5.92487 23 12 23ZM13.5 6.5V11.3787L17.0607 14.9393C17.6464 15.5251 17.6464 16.4749 17.0607 17.0607C16.4749 17.6464 15.5251 17.6464 14.9393 17.0607L10.9393 13.0607C10.658 12.7794 10.5 12.3978 10.5 12V6.5C10.5 5.67157 11.1716 5 12 5C12.8284 5 13.5 5.67157 13.5 6.5Z" fill="rgba(28,31,35,0.35)"/></g></svg>';
+    var ICON_HELP_16_SVG =
+      '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<path fill-rule="evenodd" clip-rule="evenodd" d="M8 14.6667C11.6819 14.6667 14.6667 11.6819 14.6667 8C14.6667 4.3181 11.6819 1.33333 8 1.33333C4.3181 1.33333 1.33333 4.3181 1.33333 8C1.33333 11.6819 4.3181 14.6667 8 14.6667ZM7.88477 9.32161C7.23438 9.32161 6.8877 8.8737 6.8877 8.32861C6.8877 7.59375 7.18587 7.16992 8.20459 6.49023C8.68441 6.15267 9.0249 5.8418 9.0249 5.35449C9.0249 4.71582 8.53467 4.29883 7.81592 4.29883C7.20215 4.29883 6.81348 4.49805 6.48096 4.90462C6.21436 5.23079 5.98828 5.35449 5.66309 5.35449C5.12923 5.35449 4.88867 4.9873 4.88867 4.57031C4.88867 4.14681 5.15755 3.71582 5.55013 3.36556C6.13574 2.84212 6.95801 2.49902 8.30176 2.49902C10.2539 2.49902 11.6279 3.50684 11.6279 5.18164C11.6279 6.625 10.9648 7.22559 10.166 7.83496C9.51758 8.35352 9.22559 8.68359 9.00977 9.28613C8.77051 9.78027 8.5625 10.0605 7.88477 9.32161ZM7.87158 12.2432C7.27002 12.2432 6.79346 11.8672 6.79346 11.2656C6.79346 10.6641 7.27002 10.2881 7.87158 10.2881C8.47314 10.2881 8.93604 10.6641 8.93604 11.2656C8.93604 11.8672 8.47314 12.2432 7.87158 12.2432Z" fill="rgba(23,26,28,0.45)"/></svg>';
+
+    function getAllFormCells() {
+      return Array.prototype.slice.call(document.querySelectorAll(".form-cell[data-field]"));
+    }
+
+    function setFieldVisibility(cell, show) {
+      if (!cell) return;
+      cell.classList.toggle("is-hidden", show === false);
+    }
+
+    function setLabelRequired(cell, cfg) {
+      var labelEl = cell.querySelector('[data-role="label"]');
+      if (!labelEl || cfg.label == null) return;
+      while (labelEl.firstChild) labelEl.removeChild(labelEl.firstChild);
+      labelEl.appendChild(document.createTextNode(cfg.label));
+      if (cfg.help) {
+        var help = document.createElement("span");
+        help.className = "label-help";
+        help.setAttribute("aria-hidden", "true");
+        help.innerHTML = ICON_HELP_16_SVG;
+        labelEl.appendChild(help);
+      }
+      if (cfg.required === true) {
+        var req = document.createElement("span");
+        req.className = "req";
+        req.setAttribute("data-role", "req");
+        req.textContent = "*";
+        labelEl.appendChild(req);
+      }
+    }
+
+    function setHint(cell, hint) {
+      var hintEl = cell.querySelector('[data-role="hint"]');
+      if (!hintEl) return;
+      if (hint == null || hint === "") {
+        hintEl.style.display = "none";
+      } else {
+        hintEl.style.display = "";
+        hintEl.textContent = hint;
+      }
+    }
+
+    function renderNumberRows(cell, rows) {
+      var wrap = cell.querySelector('[data-role="number-rows"]');
+      if (!wrap) return;
+      wrap.innerHTML = "";
+      (rows || []).forEach(function (row) {
+        var div = document.createElement("div");
+        div.className = "number-row";
+        div.innerHTML =
+          '<span class="sub-label">' + row.label + '</span>' +
+          '<input class="ctrl ctrl-input" type="text" value="' + (row.value || "") + '" readonly />' +
+          '<span class="suffix">' + (row.suffix || "") + '</span>';
+        wrap.appendChild(div);
+      });
+    }
+
+    function renderRadioOptions(cell, cfg) {
+      var wrap = cell.querySelector('[data-role="options"]');
+      if (!wrap) return;
+      wrap.innerHTML = "";
+      var name = cfg.name || "form-radio";
+      (cfg.options || []).forEach(function (opt, i) {
+        var id = name + "-" + (opt.value != null ? opt.value : i);
+        var label = document.createElement("label");
+        label.className = "choice-item";
+        label.innerHTML =
+          '<input type="radio" name="' + name + '" id="' + id + '"' + (opt.checked ? " checked" : "") + " />" +
+          '<span class="radio-dot"></span>' + opt.label;
+        wrap.appendChild(label);
+      });
+    }
+
+    function renderCheckboxOptions(cell, cfg) {
+      var wrap = cell.querySelector('[data-role="options"]');
+      if (!wrap) return;
+      wrap.innerHTML = "";
+      (cfg.options || []).forEach(function (opt, i) {
+        var id = "form-checkbox-" + (opt.value != null ? opt.value : i);
+        var label = document.createElement("label");
+        label.className = "choice-item";
+        label.innerHTML =
+          '<input type="checkbox" id="' + id + '"' + (opt.checked ? " checked" : "") + " />" +
+          '<span class="check-box"></span>' + opt.label;
+        wrap.appendChild(label);
+      });
+    }
+
+    function bindPreviewTabs(container) {
+      if (!container) return;
+      container.querySelectorAll("button").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          container.querySelectorAll("button").forEach(function (b) {
+            b.classList.toggle("active", b === btn);
+          });
+        });
+      });
+    }
+
+    function renderPreviewTabs(tabs) {
+      var container = document.getElementById("form-preview-tabs");
+      if (!container) return;
+      var list = (tabs || []).slice(0, 3);
+      container.innerHTML = "";
+      container.classList.toggle("is-hidden", list.length <= 1);
+      if (list.length <= 1) return;
+      list.forEach(function (text, i) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = text;
+        if (i === 0) btn.classList.add("active");
+        btn.setAttribute("data-preview", String(i));
+        container.appendChild(btn);
+      });
+      bindPreviewTabs(container);
+    }
+
+    function applyFieldToCell(cell, key, f) {
+      if (!cell || !f) return;
+      setFieldVisibility(cell, f.show !== false);
+      if (f.show === false) return;
+
+      if (key === "infoName") {
+        setLabelRequired(cell, f);
+        var valEl = cell.querySelector('[data-role="value"]');
+        if (valEl && f.value != null) valEl.textContent = f.value;
+        return;
+      }
+      if (key === "numberInput") {
+        setLabelRequired(cell, f);
+        renderNumberRows(cell, f.rows);
+        var errWrap = cell.querySelector('[data-role="error"]');
+        if (errWrap) {
+          errWrap.style.display = f.showError ? "" : "none";
+          var errText = errWrap.querySelector('[data-role="error-text"]');
+          if (errText && f.errorText != null) errText.textContent = f.errorText;
+        }
+        return;
+      }
+      if (key === "radio") {
+        setLabelRequired(cell, f);
+        setHint(cell, f.hint);
+        renderRadioOptions(cell, f);
+        return;
+      }
+      if (key === "checkbox") {
+        setLabelRequired(cell, f);
+        setHint(cell, f.hint);
+        renderCheckboxOptions(cell, f);
+        return;
+      }
+      if (key === "addButton") {
+        setLabelRequired(cell, f);
+        setHint(cell, f.hint);
+        var btnText = cell.querySelector('[data-role="btn-text"]');
+        if (btnText && f.buttonText != null) btnText.textContent = f.buttonText;
+        return;
+      }
+      if (key.indexOf("upload") === 0) {
+        setLabelRequired(cell, f);
+        setHint(cell, f.hint);
+        var upload = cell.querySelector('[data-role="upload"]');
+        if (upload && f.sizeClass) {
+          upload.className = "upload-card " + f.sizeClass;
+          if (!upload.querySelector("svg, img")) {
+            upload.innerHTML = ICON_PLUS_SVG;
+          }
+        }
+        return;
+      }
+      setLabelRequired(cell, f);
+      setHint(cell, f.hint);
+      var control = cell.querySelector('[data-role="control"]');
+      if (control && f.placeholder != null) control.placeholder = f.placeholder;
+      var counter = cell.querySelector('[data-role="counter"]');
+      if (counter && f.maxLength != null) counter.textContent = "0/" + f.maxLength;
+      if (key === "dateRange") {
+        var start = cell.querySelector('[data-role="start"]');
+        var end = cell.querySelector('[data-role="end"]');
+        if (start && f.startPlaceholder != null) start.textContent = f.startPlaceholder;
+        if (end && f.endPlaceholder != null) end.textContent = f.endPlaceholder;
+      }
+      var select = cell.querySelector("select.ctrl-select");
+      if (select && f.placeholder != null) select.innerHTML = '<option>' + f.placeholder + "</option>";
+    }
+
+    function renderSections(sections, fields) {
+      var container = document.getElementById("form-sections");
+      var formBody = document.getElementById("form-body");
+      if (!container || !formBody) return;
+
+      var cells = getAllFormCells();
+      var cellMap = {};
+      cells.forEach(function (cell) {
+        cellMap[cell.getAttribute("data-field")] = cell;
+      });
+
+      if (!sections || sections.length === 0) {
+        container.innerHTML = "";
+        var defaultSection = document.createElement("section");
+        defaultSection.className = "form-section";
+        defaultSection.setAttribute("data-section", "default");
+        defaultSection.appendChild(formBody);
+        container.appendChild(defaultSection);
+        Object.keys(fields).forEach(function (key) {
+          applyFieldToCell(cellMap[key], key, fields[key]);
+        });
+        return;
+      }
+
+      container.innerHTML = "";
+      sections.forEach(function (sec) {
+        var sectionEl = document.createElement("section");
+        sectionEl.className = "form-section";
+        sectionEl.setAttribute("data-section", sec.key || "");
+        var visibleCount = 0;
+        var body = document.createElement("div");
+        body.className = "form-body";
+
+        if (sections.length > 1 && sec.title) {
+          var title = document.createElement("h3");
+          title.className = "section-title";
+          title.textContent = sec.title;
+          sectionEl.appendChild(title);
+        }
+
+        (sec.fields || []).forEach(function (key) {
+          var cell = cellMap[key];
+          var f = fields[key];
+          if (!cell || !f || f.show === false) return;
+          body.appendChild(cell);
+          applyFieldToCell(cell, key, f);
+          visibleCount++;
+        });
+
+        sectionEl.appendChild(body);
+        var hideSection = sec.show === false || visibleCount === 0;
+        sectionEl.classList.toggle("is-hidden", hideSection);
+        if (!hideSection) container.appendChild(sectionEl);
+      });
+    }
+
+    function applyFormFieldConfig(config) {
+      var cfg = config || FORM_FIELD_CONFIG;
+      var page = cfg.page || {};
+      var meta = cfg.meta || {};
+      var preview = cfg.preview || {};
+      var footer = cfg.footer || {};
+      var fields = cfg.fields || {};
+
+      var titleEl = document.getElementById("form-page-title");
+      var descEl = document.getElementById("form-page-desc");
+      if (titleEl && page.title != null) titleEl.textContent = page.title;
+      if (descEl && page.description != null) descEl.textContent = page.description;
+
+      var accessEl = document.getElementById("form-meta-access");
+      var guideEl = document.getElementById("form-meta-guide");
+      if (accessEl) accessEl.classList.toggle("is-hidden", meta.showAccess === false);
+      if (guideEl) guideEl.classList.toggle("is-hidden", meta.showGuide === false);
+      var accessLabel = document.getElementById("form-meta-access-label");
+      var capName = document.getElementById("form-meta-capability-name");
+      var guideText = document.getElementById("form-meta-guide-text");
+      if (accessLabel && meta.accessLabel != null) accessLabel.textContent = meta.accessLabel;
+      if (capName && meta.capabilityName != null) capName.textContent = meta.capabilityName;
+      if (guideText && meta.guideText != null) guideText.textContent = meta.guideText;
+      if (guideEl && meta.guideHref != null) guideEl.href = meta.guideHref;
+
+      var formRow = document.querySelector(".form-row");
+      var showPreview = preview.show !== false;
+      if (formRow) formRow.classList.toggle("no-preview", !showPreview);
+
+      var previewCard = document.getElementById("form-preview");
+      if (previewCard) previewCard.classList.toggle("is-hidden", !showPreview);
+      var previewTitle = document.getElementById("form-preview-title");
+      var previewCaption = document.getElementById("form-preview-caption");
+      if (previewTitle && preview.title != null) previewTitle.textContent = preview.title;
+      if (previewCaption && preview.caption != null) previewCaption.textContent = preview.caption;
+      if (preview.tabs) renderPreviewTabs(preview.tabs);
+
+      var footerEl = document.getElementById("form-footer");
+      if (footerEl) footerEl.classList.toggle("is-hidden", footer.show === false);
+      var cancelBtn = document.getElementById("form-btn-cancel");
+      var submitBtn = document.getElementById("form-btn-submit");
+      if (cancelBtn && footer.cancelText != null) cancelBtn.textContent = footer.cancelText;
+      if (submitBtn && footer.submitText != null) submitBtn.textContent = footer.submitText;
+
+      var sections = cfg.sections;
+      if (cfg.variant === "layered" && !sections) sections = LAYERED_SECTIONS;
+      renderSections(sections, fields);
+      mountSuffixIcons();
+    }
+
+    function mountSuffixIcons() {
+      document.querySelectorAll('[data-field="timePicker"] .ctrl-suffix-icon').forEach(function (el) {
+        el.innerHTML = ICON_CLOCK_SVG;
+      });
+      document.querySelectorAll('[data-field="datePicker"] .ctrl-suffix-icon, [data-field="dateRange"] .date-range-suffix').forEach(function (el) {
+        el.innerHTML = ICON_CALENDAR_SVG;
+      });
+    }
+
+    window.FORM_FIELD_CONFIG = FORM_FIELD_CONFIG;
+    window.applyFormFieldConfig = applyFormFieldConfig;
+    window.LAYERED_SECTIONS = LAYERED_SECTIONS;
+    /* 默认展示分层信息模块（画板 2286:31417） */
+    FORM_FIELD_CONFIG.variant = "layered";
+    FORM_FIELD_CONFIG.sections = LAYERED_SECTIONS;
+    applyFormFieldConfig(FORM_FIELD_CONFIG);
+  </script>
+</body>
+</html>

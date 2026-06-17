@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Games Design Skill — 预览入口</title>
+  <style>
+    :root {
+      --text: #1c1f23;
+      --muted: rgba(28, 31, 35, 0.6);
+      --primary: #1c5cfb;
+      --bg: #f9f9f9;
+      --card: #fff;
+      --border: rgba(28, 31, 35, 0.08);
+      --font: "PingFang SC", -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      padding: 48px 24px;
+    }
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .hint {
+      margin: 0 0 32px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .hint code {
+      font-size: 13px;
+      background: rgba(28, 92, 251, 0.08);
+      color: var(--primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 12px;
+    }
+    a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    a:hover {
+      border-color: rgba(28, 92, 251, 0.35);
+      box-shadow: 0 4px 12px rgba(28, 92, 251, 0.08);
+    }
+    .name { font-size: 15px; font-weight: 500; }
+    .file { font-size: 13px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>页面预览</h1>
+    <p class="hint">
+      预览目录 <code>Games-design-skill/preview/</code>，资产路径 <code>../assets/</code>。
+      在 <code>Design skill</code> 根目录执行 <code>python3 -m http.server 5503</code>，打开
+      <code>http://127.0.0.1:5503/Games-design-skill/preview/index.html</code>（须 HTTP，勿用 <code>file://</code>）。
+      <code>assets/icons/*.svg</code> 须 UTF-8（见 <code>assets/README.md</code> §2.3）；若 svg 报 <code>Encoding error</code>，修复编码后再预览。
+    </p>
+    <ul>
+      <li><a href="LayoutSpec.html"><span class="name">布局规范</span><span class="file">LayoutSpec.html</span></a></li>
+      <li><a href="CapabilityIntro.html"><span class="name">能力介绍</span><span class="file">CapabilityIntro.html</span></a></li>
+      <li><a href="Capability-center.html"><span class="name">能力中心</span><span class="file">Capability-center.html</span></a></li>
+      <li><a href="InfoQuery.html"><span class="name">信息查询</span><span class="file">InfoQuery.html</span></a></li>
+      <li><a href="InfoInput.html"><span class="name">信息录入</span><span class="file">InfoInput.html</span></a></li>
+      <li><a href="Dashboard.html"><span class="name">数据看板</span><span class="file">Dashboard.html</span></a></li>
+      <li><a href="Modal.html"><span class="name">弹窗</span><span class="file">Modal.html</span></a></li>
+    </ul>
+  </main>
+</body>
+</html>

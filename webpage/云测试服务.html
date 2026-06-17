@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>云测试服务</title>
+  <link rel="stylesheet" href="../Games-design-skill/assets/layout-shell.css" />
+  <link rel="stylesheet" href="https://unpkg.com/@douyinfe/semi-ui@2.70.0/dist/css/semi.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/@douyinfe/semi-icons@2.70.0/dist/css/semi-icons.min.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif; color: #1c1f23; }
+    .main { max-width: 1072px; margin: 0 auto; padding: 0 0 48px; }
+    .page-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .page-title { font-size:24px; line-height:32px; font-weight:600; }
+    .func-desc { display:inline-flex; align-items:center; gap:6px; font-size:14px; color:rgba(28,31,35,.6); text-decoration:none; }
+    .func-desc-icon { display:inline-flex; align-items:center; color:inherit; }
+    .page-banner-wrap { margin-bottom:16px; }
+    .page-banner-wrap .semi-banner { border-radius:12px; }
+    .page-banner-wrap .semi-banner-info.semi-banner-bordered { border:1px solid var(--semi-color-primary-disabled); }
+    .tabs-line { display:flex; border-bottom:1px solid rgba(28,31,35,.08); margin-bottom:16px; }
+    .line-tab { padding:16px 0 14px; margin-right:24px; border:none; background:none; font-size:14px; color: rgba(28,31,35,.6); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
+    .line-tab.active { color:#1c1f23; font-weight:600; border-bottom-color:#1c5cfb; }
+    .subtabs { display:flex; gap:8px; margin-bottom:16px; }
+    .subtab { padding:8px 12px; border:none; border-radius:3px; background:transparent; color: rgba(28,31,35,.6); cursor:pointer; }
+    .subtab.active { background:#edf3ff; color:#1c5cfb; font-weight:600; }
+    .card { background:#fff; border-radius:12px; padding:24px; margin-bottom:16px; }
+    .card-toolbar { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:24px; }
+    .filters { display:flex; flex:1; min-width:0; flex-wrap:wrap; gap:16px 24px; align-items:center; }
+    .filters--multi-row { flex-direction:column; flex-wrap:nowrap; align-items:flex-start; gap:16px; }
+    .filters--multi-row .filters-row { display:flex; flex-wrap:wrap; gap:16px 24px; align-items:center; }
+    .card-toolbar-action { flex-shrink:0; }
+    .field { display:flex; align-items:center; gap:8px; }
+    .field label { font-size:14px; white-space:nowrap; color:#1c1f23; }
+    .field-control { flex-shrink:0; }
+    .field-control--input,
+    .field-control--select { width:216px; }
+    .field-control--date { width:260px; }
+    .btn-primary { height:32px; padding:0 12px; border:none; border-radius:3px; background:#1c5cfb; color:#fff; font-weight:600; cursor:pointer; }
+    .table-wrap { overflow:auto; position:relative; }
+    .col-sticky-right {
+      position: sticky;
+      right: 0;
+      z-index: 1;
+      background-color: #fff;
+    }
+    .table-wrap.has-horizontal-scroll:not(.scroll-at-right) .col-sticky-right::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 4px;
+      transform: translateX(-100%);
+      background: rgba(var(--semi-grey-2), 0.3);
+      pointer-events: none;
+    }
+    thead .col-sticky-right {
+      z-index: 2;
+      background-color: #f7f8f9;
+    }
+    tbody .col-sticky-right::before { bottom: -1px; }
+    tbody .col-sticky-right { background-color: #fff; }
+    .table-pagination { display:flex; justify-content:flex-end; margin-top:16px; }
+    table { width:100%; min-width:1400px; border-collapse:collapse; table-layout:fixed; }
+    thead th { height:36px; padding:8px 12px; text-align:left; font-size:14px; color:rgba(28,31,35,.6); background:rgba(46,50,56,.05); }
+    tbody td { height:56px; padding:0 12px; border-bottom:1px solid rgba(28,31,35,.08); font-size:14px; vertical-align:middle; }
+    .score { font-weight:400; color:#1c1f23; }
+    .status { display:inline-flex; align-items:center; gap:8px; }
+    .status::before { content:""; width:8px; height:8px; border-radius:50%; background:#3bb346; }
+    .status.queue::before { background:#a7abb0; }
+    .status.testing::before { background:#f0b114; }
+    .status.cancel::before { background:#888d92; }
+    .status.error::before { background:#f93920; }
+    .actions a { color:#1c5cfb; text-decoration:none; margin-right:16px; font-weight:600; }
+    .actions a.muted { color:rgba(28,31,35,.6); }
+    .actions .danger { color:#f93920; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .test-form-modal .semi-form-field { margin-bottom: 16px; }
+    .test-form-modal .form-group-block { margin-bottom: 16px; }
+    .test-form-modal .form-group-block > .semi-form-field {
+      margin-bottom: 0 !important;
+      padding-bottom: 0 !important;
+    }
+    .test-form-modal .form-group-block > .semi-form-field-horizontal {
+      align-items: center;
+    }
+    .test-form-modal .form-group-block > .semi-form-field-horizontal .semi-form-field-label {
+      align-self: center;
+      padding-top: 0;
+      line-height: 20px;
+    }
+    .test-form-modal .form-group-block > .semi-form-field-horizontal .semi-form-field-main {
+      display: flex;
+      align-items: center;
+      min-height: 32px;
+    }
+    .test-form-modal .form-group-label {
+      width: 145px;
+      flex-shrink: 0;
+      font-size: 14px;
+      font-weight: 400;
+      color: #1c1f23;
+      line-height: 20px;
+    }
+    .test-form-modal .form-group-label-required::after {
+      content: '*';
+      color: #f93920;
+      margin-left: 4px;
+    }
+    .test-form-modal .semi-form-field-label,
+    .test-form-modal .semi-form-field-label-text {
+      font-weight: 400 !important;
+    }
+    .test-form-modal .form-group-nested {
+      margin-top: 8px;
+      margin-left: 145px;
+    }
+    .test-form-modal .form-mode-hint {
+      margin-top: 8px;
+      margin-left: 145px;
+      font-size: 12px;
+      line-height: 16px;
+      color: rgba(28, 31, 35, 0.6);
+    }
+    .test-form-modal .form-mode-hint .semi-typography-link {
+      font-size: 12px;
+      line-height: 16px;
+    }
+    .test-form-modal .mode-radio-with-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .test-form-modal .mode-beta-tag.semi-tag {
+      margin: 0;
+      border: none !important;
+      background: linear-gradient(135deg, #7b61ff 0%, #1c5cfb 52%, #00c8ff 100%) !important;
+      color: #fff !important;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 16px;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 3px;
+    }
+    .test-form-modal .form-group-nested > .semi-form-field {
+      margin-bottom: 0 !important;
+      padding-bottom: 0 !important;
+    }
+    .test-form-modal .form-inline-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .test-form-modal .form-device-count {
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+    }
+    .test-form-modal .form-device-count .semi-form-field {
+      margin: 0 !important;
+      padding: 0 !important;
+      flex: none;
+      width: auto;
+    }
+    .test-form-modal .form-device-count .semi-form-field-main {
+      margin: 0;
+      padding: 0;
+    }
+    .test-form-modal .form-device-count .semi-input-number {
+      width: 216px;
+    }
+    .test-form-modal .form-device-count-suffix {
+      margin-left: 8px;
+      font-size: 14px;
+      line-height: 20px;
+      color: #1c1f23;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .test-form-modal .form-readonly {
+      font-size: 14px;
+      color: #1c1f23;
+      line-height: 20px;
+    }
+    .test-form-modal .form-standard-link {
+      font-size: 14px;
+      line-height: 20px;
+      color: #1c5cfb;
+      text-decoration: none;
+    }
+    .actions a.disabled { color: rgba(28,31,35,.35); cursor: not-allowed; pointer-events: none; }
+  </style>
+</head>
+<body>
+<header class="header">
+  <div class="header-left">
+    <div class="logo">
+      <svg viewBox="0 0 131.947 23.9475" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <path d="M67.0093 3.13313H131.947V21.855H67.0093L62.393 12.495L67.0093 3.13313Z" fill="var(--fill-0,black)"/>
+        <path d="M17.4119 4.79438C16.7741 4.3715 16.227 3.82119 15.8036 3.17666C15.3802 2.53214 15.0893 1.80677 14.9484 1.04438C14.8863 0.699849 14.8549 0.350303 14.8546 7.62939e-06H10.81V16.5C10.7745 17.3913 10.4032 18.2343 9.77334 18.8532C9.14351 19.4722 8.30378 19.8194 7.42915 19.8225C6.88075 19.822 6.34068 19.6856 5.85543 19.425C5.30704 19.1321 4.84762 18.6918 4.52683 18.1518C4.20604 17.6118 4.03611 16.9926 4.03539 16.3613C4.03685 15.4439 4.39493 14.5646 5.03112 13.9161C5.66731 13.2676 6.52968 12.9029 7.42915 12.9019C7.76853 12.9027 8.10579 12.9565 8.42925 13.0613V8.85938C8.098 8.81061 7.76383 8.78554 7.42915 8.78438C5.45942 8.78637 3.57091 9.58528 2.1781 11.0058C0.785291 12.4263 0.00195136 14.3524 4.50623e-06 16.3613C-0.00131226 17.5805 0.285971 18.7821 0.837446 19.8639C1.38892 20.9457 2.18829 21.8757 3.16763 22.575C4.41393 23.4699 5.90129 23.9493 7.42547 23.9475C9.39505 23.945 11.2833 23.146 12.676 21.7256C14.0687 20.3051 14.8522 18.3794 14.8546 16.3706V7.99688C16.4903 9.19636 18.4546 9.84053 20.4692 9.83813V5.71313C19.3842 5.71636 18.3218 5.39709 17.4119 4.79438Z" fill="var(--fill-0,black)"/>
+        <path d="M27.231 4.20004V17.6738C27.2391 17.7744 27.2262 17.8756 27.1933 17.9707C27.1603 18.0659 27.108 18.1529 27.0398 18.226C26.9716 18.2991 26.889 18.3567 26.7974 18.395C26.7059 18.4333 26.6074 18.4514 26.5085 18.4482H25.3337V20.385H27.0876C28.4241 20.385 29.2367 19.5919 29.2367 18.1538V4.20004H27.231ZM31.0917 11.85L25.3264 12.735V14.7263L31.0917 13.8413V11.85ZM31.0917 6.87378H25.3264V8.77129H31.0917V6.87378ZM40.0376 20.6794V4.20004H37.9583V20.6813L40.0376 20.6794ZM36.7559 12.075V10.1382L32.4191 9.34504V11.2988L36.7559 12.075ZM36.7559 7.92754V5.97191L32.4191 5.17879V7.13441L36.7559 7.92754ZM41.5359 13.7532L31.7774 14.6363V16.59L41.5359 15.7238V13.7532Z" fill="var(--fill-0,black)"/>
+        <path d="M59.8247 9.88876H43.378V11.7319H59.8247V9.88876ZM54.2414 10.3125H56.3905L56.9145 8.06251H54.7469L54.2414 10.3125ZM43.7218 7.27126H59.4809V5.42813H52.9213L52.6327 4.26751H50.4634L50.7704 5.42813H43.7218V7.27126ZM46.8858 10.3125H49.0349L48.5293 8.06251H46.3783L46.8858 10.3125ZM46.1504 17.4375H57.1369V15.75H46.1504V17.4375ZM47.2534 18.7275C47.1315 18.729 47.0139 18.6814 46.9262 18.5951C46.8384 18.5087 46.7875 18.3906 46.7846 18.2663V15.0225C46.7841 14.9595 46.7959 14.897 46.8193 14.8387C46.8427 14.7803 46.8771 14.7273 46.9207 14.6827C46.9643 14.638 47.0162 14.6026 47.0733 14.5786C47.1304 14.5545 47.1917 14.5423 47.2534 14.5425H55.964C56.0259 14.542 56.0873 14.5541 56.1447 14.578C56.202 14.602 56.2541 14.6373 56.2979 14.682C56.3417 14.7267 56.3763 14.7798 56.3998 14.8382C56.4233 14.8967 56.4351 14.9593 56.4346 15.0225V18.2663C56.4317 18.3909 56.3806 18.5094 56.2925 18.5958C56.2043 18.6822 56.0862 18.7295 55.964 18.7275H47.2534ZM46.5181 20.6025H56.6994C57.8741 20.6025 58.5084 19.9575 58.5084 18.7594V14.5894C58.5084 13.3913 57.8741 12.7463 56.6994 12.7463H46.507C45.3323 12.7463 44.6998 13.3913 44.6998 14.5894V18.7725C44.7035 19.9706 45.3359 20.6156 46.5107 20.6156L46.5181 20.6025Z" fill="var(--fill-0,black)"/>
+        <path d="M71.2433 7.74753H83.1104V6.07504H71.2433V7.74753ZM70.6329 12.9807H83.7244V11.3119H70.6366L70.6329 12.9807ZM71.0649 19.245C74.3502 17.7882 75.4367 14.5575 75.4367 9.84191V6.97504H73.7105V10.1288C73.7105 13.3294 73.2508 15.7875 71.0649 17.1207V19.245ZM79.4225 19.1832H81.1322V6.97504H79.4225V19.1832Z" fill="var(--fill-0,white)"/>
+        <path d="M92.218 11.4019C93.6446 10.6519 94.6263 8.86874 94.6263 5.74499H93.1004C93.1004 7.48874 92.832 8.41499 92.2235 9.09749L92.218 11.4019ZM94.2991 8.45999L98.6709 8.47499V6.89811H94.2991V8.45999ZM98.7996 19.1231V17.3625C96.3747 16.6125 94.8727 14.175 94.5455 11.1131H93.06C93.3928 15.33 95.5327 18.3337 98.7996 19.1231ZM92.4055 19.1231C95.2459 17.94 97.9374 15.9075 97.9374 9.49124V8.97561H96.3159V9.49124C96.3159 14.4056 94.6502 16.2562 92.4055 17.3025V19.1231ZM85.6529 19.0912C87.8241 17.7262 88.7617 15.0881 88.7617 12.1294V8.51249H87.1696V11.94C87.1696 14.1544 86.5905 15.8231 85.6529 16.6575V19.0912ZM90.1148 11.7787V16.86C90.1148 17.1337 89.9953 17.3156 89.7287 17.3156H88.8959V18.8625H90.3373C91.2455 18.8625 91.7363 18.3619 91.7363 17.4375V11.3569C91.7363 10.5525 91.2896 10.0987 90.5009 10.0987H88.008L87.9638 11.5237H89.8519C89.8861 11.5196 89.9207 11.5233 89.9532 11.5347C89.9857 11.5461 90.0153 11.5649 90.0397 11.5896C90.0641 11.6143 90.0827 11.6443 90.0941 11.6774C90.1055 11.7105 90.1095 11.7458 90.1056 11.7806L90.1148 11.7787ZM88.1367 7.97436H89.6681L89.1919 5.74499H87.5851L88.1367 7.97436ZM91.9735 7.09499H85.6529V8.65686H91.9735V7.09499Z" fill="var(--fill-0,white)"/>
+        <path d="M111.034 12.0844L112.062 8.41316H110.187L109.161 12.0844H111.034ZM102.782 12.0844H104.655L103.629 8.41316H101.756L102.782 12.0844ZM101.057 7.71566H112.924V6.07504H101.057V7.71566ZM100.454 14.4038H113.54V12.7669H100.454V14.4038ZM106.12 19.1775H107.859V6.92628H106.12V19.1775Z" fill="var(--fill-0,white)"/>
+        <path d="M128.161 9.63752L126.926 7.25627H125.038L126.658 10.5619L127.507 9.8794H117.528L120.427 5.8294H118.419L115.564 9.74252C115 10.5169 115.445 11.5481 116.59 11.5481H127.031C128.071 11.5388 128.65 10.575 128.161 9.63752ZM118.197 17.3869C118.097 17.3889 118 17.3507 117.928 17.2805C117.855 17.2104 117.812 17.1139 117.809 17.0119V14.7619C117.809 14.71 117.819 14.6585 117.838 14.6105C117.858 14.5625 117.886 14.5189 117.922 14.4822C117.958 14.4456 118.001 14.4167 118.048 14.3971C118.096 14.3775 118.146 14.3677 118.197 14.3682H125.588C125.638 14.3679 125.689 14.3779 125.736 14.3976C125.783 14.4173 125.825 14.4463 125.861 14.4829C125.897 14.5195 125.925 14.563 125.945 14.6109C125.964 14.6588 125.974 14.7101 125.974 14.7619V17.0119C125.97 17.1135 125.928 17.2097 125.856 17.2799C125.784 17.35 125.687 17.3884 125.588 17.3869H118.197ZM117.543 19.0557H126.242C127.209 19.0557 127.729 18.525 127.729 17.5388V14.2388C127.729 13.2525 127.209 12.7219 126.242 12.7219H117.552C116.585 12.7219 116.064 13.2525 116.064 14.2388V17.5294C116.055 18.5156 116.576 19.0463 117.552 19.0463L117.543 19.0557Z" fill="var(--fill-0,white)"/>
+      </svg>
+    </div>
+
+    <ul class="nav-tabs">
+      <li>首页</li>
+      <li>解决方案</li>
+      <li>客户案例</li>
+      <li>文档<span class="nav-chevron"><svg viewBox="0 0 6 4" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.83961 3.81916C5.62575 4.06028 5.27902 4.06028 5.06517 3.81916L3 1.49064L0.93483 3.81916C0.720975 4.06028 0.374247 4.06028 0.160391 3.81916C-0.0534638 3.57803 -0.0534638 3.18709 0.160391 2.94596L2.61278 0.180845C2.82664 -0.0602815 3.17336 -0.0602815 3.38722 0.180845L5.83961 2.94596C6.05346 3.18709 6.05346 3.57803 5.83961 3.81916Z" fill="rgba(0,0,0,0.75)"/></svg></span></li>
+      <li>学堂</li>
+      <li>社区</li>
+      <li>服务市场</li>
+      <li>支持与服务<span class="nav-chevron"><svg viewBox="0 0 6 4" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.83961 3.81916C5.62575 4.06028 5.27902 4.06028 5.06517 3.81916L3 1.49064L0.93483 3.81916C0.720975 4.06028 0.374247 4.06028 0.160391 3.81916C-0.0534638 3.57803 -0.0534638 3.18709 0.160391 2.94596L2.61278 0.180845C2.82664 -0.0602815 3.17336 -0.0602815 3.38722 0.180845L5.83961 2.94596C6.05346 3.18709 6.05346 3.57803 5.83961 3.81916Z" fill="rgba(0,0,0,0.75)"/></svg></span></li>
+      <li>合作平台<span class="nav-chevron"><svg viewBox="0 0 6 4" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.83961 3.81916C5.62575 4.06028 5.27902 4.06028 5.06517 3.81916L3 1.49064L0.93483 3.81916C0.720975 4.06028 0.374247 4.06028 0.160391 3.81916C-0.0534638 3.57803 -0.0534638 3.18709 0.160391 2.94596L2.61278 0.180845C2.82664 -0.0602815 3.17336 -0.0602815 3.38722 0.180845L5.83961 2.94596C6.05346 3.18709 6.05346 3.57803 5.83961 3.81916Z" fill="rgba(0,0,0,0.75)"/></svg></span></li>
+    </ul>
+  </div>
+
+  <div class="header-right">
+    <div class="search-input">
+      <span>输入关键词搜索</span>
+      <svg class="search-icon" viewBox="0 0 16 16" fill="none">
+        <circle cx="7" cy="7" r="4.5" stroke="rgba(0,0,0,0.4)" stroke-width="1.5"/>
+        <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="rgba(0,0,0,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="console-btn">控制台</span>
+    <div class="user-block">
+      <div class="user-bell">
+        <svg viewBox="0 0 15.1704 17.6667" fill="none" preserveAspectRatio="xMidYMid meet">
+          <path d="M0.262402 12.0529C-0.448745 13.1907 0.36928 14.6667 1.71107 14.6667H4.34468L4.34493 14.67H10.8255L10.8257 14.6667H13.4593C14.8011 14.6667 15.6191 13.1907 14.908 12.0529L13.9098 10.4558C13.4798 9.7679 13.2518 8.97299 13.2518 8.16176V6.5C13.2518 4.09178 11.7508 2.03676 9.63379 1.21544C9.23774 0.491194 8.46883 0 7.58518 0C6.70154 0 5.93262 0.491195 5.53657 1.21544C3.41959 2.03676 1.91851 4.09178 1.91851 6.5V8.16176C1.91851 8.973 1.69054 9.7679 1.26058 10.4558L0.262402 12.0529Z" fill="#262D34" fill-opacity="0.75"/>
+          <path d="M7.58521 17.6667C6.31268 17.6667 5.21098 16.9353 4.67748 15.87H10.4929C9.95943 16.9353 8.85773 17.6667 7.58521 17.6667Z" fill="#262D34" fill-opacity="0.75"/>
+        </svg>
+      </div>
+      <div class="user-badge">99+</div>
+      <div class="user-name-row">
+        <span>Sally07…</span>
+        <div class="user-chevron-wrap">
+          <svg viewBox="0 0 16 16" fill="none">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M11.7862 10.4255C11.501 10.747 11.0387 10.747 10.7536 10.4255L8.00002 7.32085L5.24646 10.4255C4.96132 10.747 4.49902 10.747 4.21388 10.4255C3.92874 10.104 3.92874 9.58278 4.21388 9.26128L7.48373 5.57446C7.76887 5.25296 8.23117 5.25296 8.51631 5.57446L11.7862 9.26128C12.0713 9.58278 12.0713 10.104 11.7862 10.4255Z" fill="#262D34"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout-body">
+
+  <div class="sidebar-column">
+  <aside class="sidebar">
+
+    <div class="app-switcher">
+      <div class="app-switcher-info">
+        <div class="app-avatar">
+          <div class="avatar-bg" aria-hidden="true"></div>
+          <div class="avatar-overlay"></div>
+        </div>
+        <div class="app-meta">
+          <div class="app-name">航海王热血航线</div>
+          <div class="app-id-row">
+            <span class="app-id">AppID:32193237437…</span>
+            <svg class="copy-icon" viewBox="0 0 16 16" fill="none">
+              <path d="M4.33301 4.1432V2.60352C4.33301 2.08575 4.75273 1.66602 5.27051 1.66602H13.3955C13.9133 1.66602 14.333 2.08575 14.333 2.60352V10.7285C14.333 11.2463 13.9133 11.666 13.3955 11.666H11.8384" stroke="var(--stroke-0,#1C5CFB)" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10.7295 4.33398H2.60449C2.08673 4.33398 1.66699 4.75372 1.66699 5.27148V13.3965C1.66699 13.9143 2.08673 14.334 2.60449 14.334H10.7295C11.2473 14.334 11.667 13.9143 11.667 13.3965V5.27148C11.667 4.75372 11.2473 4.33398 10.7295 4.33398Z" stroke="var(--stroke-0,#1C5CFB)" stroke-width="1.33" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <svg class="switch-icon" viewBox="0 0 16 16" fill="none">
+        <defs><clipPath id="cp-sw"><rect width="16" height="16" fill="white"/></clipPath></defs>
+        <g clip-path="url(#cp-sw)">
+          <path d="M3.334 2.666L1.334 4.666L3.334 6.666" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12.666 9.334L14.666 11.334L12.666 13.334" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1.334 4.666H14.667" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1.334 11.334H14.667" stroke="#888D92" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </div>
+
+    <nav class="nav-menu" id="navMenu">
+
+      <div class="nav-group" data-group="overview" data-no-children>
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 44 44" fill="none" preserveAspectRatio="xMidYMid meet">
+              <rect x="2" y="2" width="40" height="40" rx="3" stroke="var(--stroke-0)" stroke-width="4" stroke-linejoin="round"/>
+              <rect x="10" y="10" width="8" height="8" stroke="var(--stroke-0)" stroke-width="4" stroke-linejoin="round"/>
+              <rect x="10" y="26" width="8" height="8" stroke="var(--stroke-0)" stroke-width="4" stroke-linejoin="round"/>
+              <path d="M26 26H34M26 34H34M26 10H34M26 18H34" stroke="var(--stroke-0)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">总览</span>
+        </div>
+      </div>
+
+      <div class="nav-group" data-group="manage">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 16.7811 18.3016" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M15.9461 5.63188C15.9461 5.18028 15.7025 4.7638 15.3089 4.54241L9.00338 0.99553C8.62286 0.78149 8.15825 0.78149 7.77773 0.995531L1.47217 4.54241C1.07858 4.7638 0.835 5.18028 0.835 5.63187V12.6698C0.835 13.1213 1.07858 13.5378 1.47217 13.7592L7.77773 17.3061C8.15825 17.5201 8.62286 17.5201 9.00338 17.3061L15.3089 13.7592C15.7025 13.5378 15.9461 13.1213 15.9461 12.6698V5.63188Z" stroke="var(--stroke-0)" stroke-width="1.67"/>
+              <path d="M1.21787 5.10587L8.3906 9.15075M8.39053 16.7064V9.15082M15.4738 4.90082L8.39053 9.15082" stroke="var(--stroke-0)" stroke-width="1.67" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">管理</span>
+        </div>
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children open" data-children="manage">
+        <div class="nav-item" data-item="版本管理"><span class="item-label">版本管理</span></div>
+        <div class="nav-item" data-item="用户反馈"><span class="item-label">用户反馈</span></div>
+        <div class="nav-item" data-item="信用分"><span class="item-label">信用分</span></div>
+      </div>
+
+      <div class="nav-group" data-group="operations">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 20 20" fill="none">
+              <g transform="translate(5.111,15.749)"><path d="M0.515 0.655C1.720 1.602 3.239 2.167 4.890 2.167C6.541 2.167 8.061 1.602 9.265 0.655" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+              <g transform="translate(2.082,3.265)"><path d="M5.833 0.797C2.938 1.686 0.833 4.382 0.833 7.569C0.833 8.371 0.967 9.141 1.212 9.860" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+              <g transform="translate(11.839,3.265)"><path d="M0.245 0.797C3.140 1.686 5.245 4.382 5.245 7.569C5.245 8.371 5.111 9.141 4.866 9.860" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+              <g transform="translate(12.917,12.082)"><path d="M5 2.917A2.083 2.083 0 112.917 0.833 2.083 2.083 0 015 2.917Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(1.251,12.082)"><path d="M5 2.917A2.083 2.083 0 112.917 0.833 2.083 2.083 0 015 2.917Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(7.082,0.832)"><path d="M5 2.917A2.083 2.083 0 112.917 0.833 2.083 2.083 0 015 2.917Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+            </svg>
+          </div>
+          <span class="nav-group-label">运营</span>
+        </div>
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="operations">
+        <div class="nav-item" data-item="运营能力"><span class="item-label">运营能力</span></div>
+        <div class="nav-item" data-item="抖音开放能力"><span class="item-label">抖音开放能力</span></div>
+        <div class="nav-item" data-item="功能"><span class="item-label">功能</span></div>
+      </div>
+
+      <div class="nav-group" data-group="data">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 17.5997 17.6003" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M5.73777 1.40749C4.75997 1.81295 3.88 2.40675 3.14311 3.14363C1.69541 4.59133 0.799992 6.59131 0.799992 8.80043C0.799992 13.2187 4.38168 16.8003 8.79991 16.8003C11.009 16.8003 13.009 15.9049 14.4567 14.4572C15.1936 13.7203 15.7874 12.8404 16.1928 11.8626" stroke="var(--stroke-0)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8.79975 8.79991H16.7997C16.7997 4.38168 13.218 0.799992 8.79975 0.799992L8.79975 8.79991Z" stroke="var(--stroke-0)" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">数据</span>
+        </div>
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="data">
+        <div class="nav-item" data-item="用户分析"><span class="item-label">用户分析</span></div>
+        <div class="nav-item" data-item="性能分析"><span class="item-label">性能分析</span></div>
+        <div class="nav-item" data-item="自定义分析"><span class="item-label">自定义分析</span></div>
+      </div>
+
+      <div class="nav-group" data-group="commerce">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 18.67 18.7789" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M6.97343 5.57824L9.33437 8.41137L11.6953 5.57824" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M2.25158 4.63383C2.25158 4.63383 5.793 -0.796371 11.9314 1.32849C18.0699 3.45336 17.8338 9.59181 17.8338 9.59181" stroke="var(--stroke-0)" stroke-width="1.67" stroke-linecap="round"/>
+              <path d="M16.4172 14.0776C16.4172 14.0776 13.5841 19.2717 7.20955 17.6191C0.835 15.9664 0.835 9.35576 0.835 9.35576" stroke="var(--stroke-0)" stroke-width="1.67" stroke-linecap="round"/>
+              <path d="M6.50126 11.2445H12.1675M6.50126 8.41138H12.1675M9.33442 8.41138V14.0776" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">商业化</span>
+        </div>
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="commerce">
+        <div class="nav-item" data-item="流量主"><span class="item-label">流量主</span></div>
+        <div class="nav-item" data-item="虚拟支付"><span class="item-label">虚拟支付</span></div>
+      </div>
+
+      <div class="nav-group" data-group="promotion">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 19.9423 14.5" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M9.97122 9.33918C11.1287 9.33918 12.067 8.40378 12.067 7.24997C12.067 6.09617 11.1287 5.16082 9.97122 5.16082C8.81382 5.16082 7.87552 6.09617 7.87552 7.24997C7.87552 8.40378 8.81382 9.33918 9.97122 9.33918Z" stroke="var(--stroke-0)" stroke-width="1.5"/>
+              <path d="M6.2827 3.0553C3.82373 5.34704 3.82373 9.06263 6.2827 11.3544M13.6597 11.3544C16.1186 9.06263 16.1186 5.34704 13.6597 3.0553" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M3.45082 0.75C-0.150275 4.33986 -0.150275 10.1601 3.45082 13.75M16.4915 13.75C20.0926 10.1601 20.0926 4.33986 16.4915 0.75" stroke="var(--stroke-0)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">推广</span>
+        </div>
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="promotion">
+        <div class="nav-item" data-item="发行人计划"><span class="item-label">发行人计划</span></div>
+        <div class="nav-item" data-item="信息流投放"><span class="item-label">信息流投放</span></div>
+        <div class="nav-item" data-item="推广资金"><span class="item-label">推广资金</span></div>
+      </div>
+
+      <div class="nav-group" data-group="develop">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 20 20" fill="none">
+              <g transform="translate(0.832,4.583)"><path d="M5.833 0.833L0.833 6.013L5.833 10.833" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(12.5,4.583)"><path d="M0.833 0.833L5.833 6.013L0.833 10.833" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g transform="translate(7.917,0.833)"><path d="M3.750 0.833L0.833 17.500" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linecap="round"/></g>
+            </svg>
+          </div>
+          <span class="nav-group-label">开发</span>
+        </div>
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children open" data-children="develop">
+        <div class="nav-item" data-item="开发设置"><span class="item-label">开发设置</span></div>
+        <div class="nav-item active" data-item="云测试服务"><span class="item-label">云测试服务</span></div>
+      </div>
+
+      <div class="nav-group" data-group="settings">
+        <div class="nav-group-inner">
+          <div class="nav-icon">
+            <svg viewBox="0 0 18.3333 15.8333" fill="none" preserveAspectRatio="xMidYMid meet">
+              <path d="M13.3335 15L17.5 7.91667L13.3335 0.833333H5.00007L0.833333 7.91667L5.00007 15H13.3335Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linejoin="round"/>
+              <path d="M9.16667 10C10.3173 10 11.25 9.067 11.25 7.917C11.25 6.766 10.3173 5.833 9.16667 5.833C8.01607 5.833 7.08333 6.766 7.08333 7.917C7.08333 9.067 8.01607 10 9.16667 10Z" stroke="var(--stroke-0)" stroke-width="1.667" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">设置</span>
+        </div>
+        <div class="nav-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.19824 5.06559C7.58876 4.67507 8.22275 4.67507 8.61328 5.06559L13.0908 9.54411C13.4813 9.93463 13.4813 10.5676 13.0908 10.9582C12.7003 11.3484 12.0672 11.3486 11.6768 10.9582L7.90624 7.18669L4.13476 10.9582C3.74434 11.3486 3.11124 11.3484 2.7207 10.9582C2.33018 10.5677 2.33018 9.93464 2.7207 9.54411L7.19824 5.06559Z" fill="var(--fill-0,#6B7075)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="nav-children" data-children="settings">
+        <div class="nav-item" data-item="基础设置"><span class="item-label">基础设置</span></div>
+        <div class="nav-item" data-item="团队协作"><span class="item-label">团队协作</span></div>
+      </div>
+
+    </nav>
+  </aside>
+  </div><!-- sidebar-column -->
+
+  
+  <div class="content-area">
+    <main class="main">
+      <section class="page-head">
+        <h1 class="page-title">云测试服务</h1>
+        <a class="func-desc" href="javascript:void(0)"><span class="func-desc-icon" id="func-desc-icon"></span>功能说明</a>
+      </section>
+
+      <div class="page-banner-wrap" id="page-banner"></div>
+
+      <div class="tabs-line" id="mainTabs">
+        <button class="line-tab active" data-tab="test">测试管理</button>
+        <button class="line-tab" data-tab="mode">模式管理</button>
+      </div>
+
+      <section class="tab-panel active" data-panel="test">
+        <div class="card">
+          <div class="card-toolbar">
+            <div class="filters filters--multi-row">
+              <div class="filters-row">
+                <div class="field"><label>测试ID</label><div class="field-control field-control--input" id="filter-test-id"></div></div>
+                <div class="field"><label>测试版本</label><div class="field-control field-control--input" id="filter-test-version"></div></div>
+                <div class="field"><label>提交人</label><div class="field-control field-control--input" id="filter-submitter"></div></div>
+                <div class="field"><label>测试模式</label><div class="field-control field-control--select" id="filter-test-mode"></div></div>
+                <div class="field"><label>测试状态</label><div class="field-control field-control--select" id="filter-test-status"></div></div>
+              </div>
+              <div class="filters-row">
+                <div class="field"><label>测试时间</label><div class="field-control field-control--date" id="filter-test-time"></div></div>
+              </div>
+            </div>
+            <div class="card-toolbar-action" id="new-test-btn-mount"></div>
+          </div>
+          <div id="test-table-mount"></div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-panel="mode">
+        <div class="subtabs" id="subTabs">
+          <button class="subtab active" data-sub="ai">AI 自动玩</button>
+          <button class="subtab" data-sub="script">脚本定制</button>
+        </div>
+
+        <div class="card tab-panel active" data-subpanel="ai">
+          <div class="card-toolbar">
+            <div class="filters">
+              <div class="field"><label>指令名称</label><div class="field-control field-control--input" id="filter-ai-name"></div></div>
+              <div class="field"><label>上传时间</label><div class="field-control field-control--date" id="filter-ai-time"></div></div>
+            </div>
+            <button class="btn-primary card-toolbar-action" type="button">新建指令</button>
+          </div>
+          <div id="ai-table-mount"></div>
+        </div>
+
+        <div class="card tab-panel" data-subpanel="script">
+          <div class="card-toolbar">
+            <div class="filters">
+              <div class="field"><label>脚本名称</label><div class="field-control field-control--input" id="filter-script-name"></div></div>
+              <div class="field"><label>上传时间</label><div class="field-control field-control--date" id="filter-script-time"></div></div>
+            </div>
+            <button class="btn-primary card-toolbar-action" type="button">新建指令</button>
+          </div>
+          <div id="script-table-mount"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<div id="modals-mount"></div>
+<script>
+(function () {
+  var menu = document.getElementById('navMenu');
+  if (!menu) return;
+
+  function clearActive() {
+    menu.querySelectorAll('.nav-item.active').forEach(function (i) { i.classList.remove('active'); });
+    menu.querySelectorAll('.nav-group.active').forEach(function (g) { g.classList.remove('active'); });
+  }
+
+  function syncArrow(groupEl) {
+    var id = groupEl.dataset.group;
+    var children = menu.querySelector('[data-children="' + id + '"]');
+    var arrow = groupEl.querySelector('.nav-arrow');
+    if (!children || !arrow) return;
+    var isOpen = children.classList.contains('open');
+    arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+
+  menu.querySelectorAll('.nav-group[data-group]').forEach(function (g) { syncArrow(g); });
+
+  menu.addEventListener('click', function (e) {
+    var group = e.target.closest('.nav-group[data-group]');
+    var item = e.target.closest('.nav-item[data-item]');
+
+    if (group) {
+      var id = group.dataset.group;
+      if (group.dataset.noChildren !== undefined) {
+        clearActive();
+        group.classList.add('active');
+        return;
+      }
+      var children = menu.querySelector('[data-children="' + id + '"]');
+      if (!children) return;
+      children.classList.toggle('open');
+      syncArrow(group);
+      return;
+    }
+
+    if (item) {
+      clearActive();
+      item.classList.add('active');
+    }
+  });
+})();
+</script>
+<script>
+(function () {
+  var mainTabs = document.querySelectorAll('#mainTabs .line-tab');
+  var mainPanels = document.querySelectorAll('[data-panel]');
+  mainTabs.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var tab = btn.getAttribute('data-tab');
+      mainTabs.forEach(function(b) { b.classList.toggle('active', b===btn); });
+      mainPanels.forEach(function(p) { p.classList.toggle('active', p.getAttribute('data-panel')===tab); });
+    });
+  });
+
+  var subTabs = document.querySelectorAll('#subTabs .subtab');
+  var subPanels = document.querySelectorAll('[data-subpanel]');
+  subTabs.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var tab = btn.getAttribute('data-sub');
+      subTabs.forEach(function(b) { b.classList.toggle('active', b===btn); });
+      subPanels.forEach(function(p) { p.classList.toggle('active', p.getAttribute('data-subpanel')===tab); });
+    });
+  });
+})();
+</script>
+<script>
+(function () {
+  function updateTableScrollState(wrap) {
+    var canScroll = wrap.scrollWidth > wrap.clientWidth + 1;
+    var atRight = wrap.scrollLeft + wrap.clientWidth >= wrap.scrollWidth - 1;
+    wrap.classList.toggle('has-horizontal-scroll', canScroll);
+    wrap.classList.toggle('scroll-at-right', atRight);
+  }
+
+  function bindTableScroll(wrap) {
+    if (wrap._scrollBound) return;
+    wrap._scrollBound = true;
+    function update() { updateTableScrollState(wrap); }
+    wrap.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
+
+  window.updateTableScrollState = updateTableScrollState;
+  window.bindTableScroll = bindTableScroll;
+
+  document.querySelectorAll('.table-wrap').forEach(bindTableScroll);
+
+  document.querySelectorAll('#mainTabs .line-tab, #subTabs .subtab').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      requestAnimationFrame(function () {
+        document.querySelectorAll('.table-wrap').forEach(updateTableScrollState);
+      });
+    });
+  });
+})();
+</script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@douyinfe/semi-ui@2.70.0/dist/umd/semi-ui.min.js"></script>
+<script src="https://unpkg.com/@douyinfe/semi-icons@2.70.0/dist/umd/semi-icons.min.js"></script>
+<script>
+(function () {
+  if (!window.SemiUI || !window.React || !window.ReactDOM) return;
+
+  var Input = SemiUI.Input;
+  var Select = SemiUI.Select;
+  var DatePicker = SemiUI.DatePicker;
+  var Banner = SemiUI.Banner;
+  var Tag = SemiUI.Tag;
+  var Pagination = SemiUI.Pagination;
+  var Modal = SemiUI.Modal;
+  var Form = SemiUI.Form;
+  var Button = SemiUI.Button;
+  var Toast = SemiUI.Toast;
+  var Radio = SemiUI.Radio;
+  var RadioGroup = SemiUI.RadioGroup;
+  var Typography = SemiUI.Typography;
+  var IconSearch = SemiIcons.IconSearch;
+  var IconBookStroked = SemiIcons.IconBookStroked;
+  var createElement = React.createElement;
+  var createRoot = ReactDOM.createRoot;
+  var useState = React.useState;
+  var useEffect = React.useEffect;
+  var useRef = React.useRef;
+  var useMemo = React.useMemo;
+
+  var TEST_MODES = [
+    { key: 'ai', label: 'AI 自动玩', color: 'purple' },
+    { key: 'script', label: '脚本定制', color: 'blue' }
+  ];
+  var TEST_STATUSES = [
+    { key: 'queue', label: '排队中', className: 'queue', title: '预计10分钟启动' },
+    { key: 'testing', label: '测试中', className: 'testing', title: '预计3分钟完成' },
+    { key: 'done', label: '已完成', className: '', title: '' },
+    { key: 'cancel', label: '已取消', className: 'cancel', title: '' },
+    { key: 'error', label: '服务异常', className: 'error', title: '服务节点异常' }
+  ];
+  var TEST_SUBMITTERS = ['张三', '李四', '王五', '赵六', '钱七', '孙八', '周九', '吴十', '郑一', '陈二'];
+  var TEST_REMARKS = ['首轮冒烟', '网络优化后复测', '版本回滚', '压测回归', '性能基线', ''];
+  var DEVICE_MODES = ['random', 'history', 'self'];
+
+  function pad2(n) { return n < 10 ? '0' + n : String(n); }
+
+  function nowTimeStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  }
+
+  function formatAiOption(item) {
+    return '指令：' + item.name + '.zip   创建时间：' + item.time;
+  }
+
+  function formatScriptOption(item) {
+    return '脚本：' + item.name + '.zip   创建时间：' + item.time;
+  }
+
+  function formatDeviceOption(item) {
+    return '版本：' + item.version + '   设备：' + item.count + '台   提交时间：' + item.time;
+  }
+
+  function getStatusByKey(key) {
+    for (var i = 0; i < TEST_STATUSES.length; i++) {
+      if (TEST_STATUSES[i].key === key) return TEST_STATUSES[i];
+    }
+    return TEST_STATUSES[0];
+  }
+
+  function getModeByKey(key) {
+    for (var i = 0; i < TEST_MODES.length; i++) {
+      if (TEST_MODES[i].key === key) return TEST_MODES[i];
+    }
+    return TEST_MODES[0];
+  }
+
+  var MODE_USERS = ['tester_amy', 'tester_bob', 'qa_lee', 'qa_john', 'dev_kai', 'ops_mia', 'tester_chen', 'dev_sam'];
+
+  function generateMockAiCommands(count) {
+    var list = [];
+    for (var i = 1; i <= count; i++) {
+      list.push({
+        id: 'ai-' + i,
+        name: 'Test_instruction' + pad2(i),
+        user: MODE_USERS[i % MODE_USERS.length],
+        time: '2025-07-' + pad2(10 + (i % 18)) + ' ' + pad2(8 + (i % 14)) + ':' + pad2(i % 60)
+      });
+    }
+    return list;
+  }
+
+  function generateMockScripts(count) {
+    var list = [];
+    for (var i = 1; i <= count; i++) {
+      list.push({
+        id: 'script-' + i,
+        name: 'Test_script' + pad2(i),
+        user: MODE_USERS[(i + 2) % MODE_USERS.length],
+        time: '2025-07-' + pad2(8 + (i % 20)) + ' ' + pad2(9 + (i % 12)) + ':' + pad2((i * 3) % 60)
+      });
+    }
+    return list;
+  }
+
+  function generateMockHistoryDevices(count) {
+    var list = [];
+    for (var i = 1; i <= count; i++) {
+      list.push({
+        id: 'hist-' + i,
+        version: 'v1.1.' + (i % 10),
+        count: 10 + (i % 30),
+        time: '2025-07-' + pad2(1 + (i % 28)) + ' ' + pad2(8 + (i % 12)) + ':' + pad2((i * 5) % 60)
+      });
+    }
+    return list;
+  }
+
+  function generateMockSelfDevices(count) {
+    var list = [];
+    for (var i = 1; i <= count; i++) {
+      list.push({
+        id: 'self-' + i,
+        version: 'v2.0.' + (i % 8),
+        count: 5 + (i % 25),
+        time: '2025-06-' + pad2(1 + (i % 28)) + ' ' + pad2(10 + (i % 10)) + ':' + pad2((i * 7) % 60)
+      });
+    }
+    return list;
+  }
+
+  var MOCK_AI_DATA = generateMockAiCommands(36);
+  var MOCK_SCRIPT_DATA = generateMockScripts(36);
+  var MOCK_HISTORY_DEVICES = generateMockHistoryDevices(12);
+  var MOCK_SELF_DEVICES = generateMockSelfDevices(12);
+
+  function generateMockTests(count) {
+    var list = [];
+    for (var i = 1; i <= count; i++) {
+      var mode = TEST_MODES[i % 2];
+      var status = TEST_STATUSES[i % 5];
+      var hasScore = status.key === 'testing' || status.key === 'done';
+      var deviceMode = DEVICE_MODES[i % 3];
+      var resourceId = mode.key === 'ai' ? 'ai-' + ((i % 36) + 1) : 'script-' + ((i % 36) + 1);
+      list.push({
+        id: 'TST2024' + String(6000 + i),
+        version: 'v1.2.' + pad2(20 - (i % 15)),
+        mode: mode,
+        status: status,
+        scores: hasScore ? [80 + (i % 15), 75 + (i % 18), 78 + (i % 12), 72 + (i % 20)] : null,
+        submitter: TEST_SUBMITTERS[i % TEST_SUBMITTERS.length],
+        time: '2026-06-' + pad2(17 - (i % 10)) + ' ' + pad2(9 + (i % 12)) + ':' + pad2(i % 60),
+        remark: TEST_REMARKS[i % TEST_REMARKS.length],
+        config: {
+          modeKey: mode.key,
+          resourceId: resourceId,
+          deviceMode: deviceMode,
+          deviceCount: 15 + (i % 25),
+          historyDeviceId: deviceMode === 'history' ? 'hist-' + ((i % 12) + 1) : null,
+          selfDeviceId: deviceMode === 'self' ? 'self-' + ((i % 12) + 1) : null
+        }
+      });
+    }
+    return list;
+  }
+
+  var testStore = {
+    data: generateMockTests(48),
+    listeners: [],
+    subscribe: function (fn) {
+      testStore.listeners.push(fn);
+      return function () {
+        testStore.listeners = testStore.listeners.filter(function (item) { return item !== fn; });
+      };
+    },
+    setData: function (updater) {
+      testStore.data = typeof updater === 'function' ? updater(testStore.data.slice()) : updater;
+      testStore.listeners.forEach(function (fn) { fn(); });
+    }
+  };
+
+  var modalStore = {
+    form: { visible: false, mode: 'create', rowId: null },
+    cancel: { visible: false, rowId: null },
+    listeners: [],
+    subscribe: function (fn) {
+      modalStore.listeners.push(fn);
+      return function () {
+        modalStore.listeners = modalStore.listeners.filter(function (item) { return item !== fn; });
+      };
+    },
+    notify: function () {
+      modalStore.listeners.forEach(function (fn) { fn(); });
+    },
+    openForm: function (mode, rowId) {
+      modalStore.form = { visible: true, mode: mode, rowId: rowId || null };
+      modalStore.notify();
+    },
+    closeForm: function () {
+      modalStore.form = { visible: false, mode: 'create', rowId: null };
+      modalStore.notify();
+    },
+    openCancel: function (rowId) {
+      modalStore.cancel = { visible: true, rowId: rowId };
+      modalStore.notify();
+    },
+    closeCancel: function () {
+      modalStore.cancel = { visible: false, rowId: null };
+      modalStore.notify();
+    }
+  };
+
+  function useTestStore() {
+    var tickState = useState(0);
+    var tick = tickState[0];
+    var setTick = tickState[1];
+    useEffect(function () {
+      return testStore.subscribe(function () { setTick(function (n) { return n + 1; }); });
+    }, []);
+    return [testStore.data, testStore.setData];
+  }
+
+  function useModalStore() {
+    var tickState = useState(0);
+    var setTick = tickState[1];
+    useEffect(function () {
+      return modalStore.subscribe(function () { setTick(function (n) { return n + 1; }); });
+    }, []);
+    return modalStore;
+  }
+
+  function getVersionOptions(data) {
+    var map = {};
+    data.forEach(function (row) { map[row.version] = true; });
+    return Object.keys(map).sort().map(function (v) { return { value: v, label: v }; });
+  }
+
+  function buildFormInit(row) {
+    if (!row) {
+      return {
+        version: '',
+        modeKey: 'ai',
+        resourceId: '',
+        deviceMode: 'random',
+        deviceCount: 20,
+        historyDeviceId: '',
+        selfDeviceId: '',
+        remark: ''
+      };
+    }
+    var cfg = row.config || {};
+    return {
+      version: row.version,
+      modeKey: cfg.modeKey || row.mode.key,
+      resourceId: cfg.resourceId || '',
+      deviceMode: cfg.deviceMode || 'random',
+      deviceCount: cfg.deviceCount != null ? cfg.deviceCount : 20,
+      historyDeviceId: cfg.historyDeviceId || '',
+      selfDeviceId: cfg.selfDeviceId || '',
+      remark: row.remark || ''
+    };
+  }
+
+  function applyFormToRow(row, values) {
+    var mode = getModeByKey(values.modeKey);
+    return Object.assign({}, row, {
+      version: values.version,
+      mode: mode,
+      status: getStatusByKey('queue'),
+      scores: null,
+      time: nowTimeStr(),
+      remark: values.remark || '',
+      config: {
+        modeKey: values.modeKey,
+        resourceId: values.resourceId,
+        deviceMode: values.deviceMode,
+        deviceCount: values.deviceCount,
+        historyDeviceId: values.deviceMode === 'history' ? values.historyDeviceId : null,
+        selfDeviceId: values.deviceMode === 'self' ? values.selfDeviceId : null
+      }
+    });
+  }
+
+  function createTestRow(values) {
+    var maxId = 6000;
+    testStore.data.forEach(function (row) {
+      var num = parseInt(String(row.id).replace('TST2024', ''), 10);
+      if (!isNaN(num) && num > maxId) maxId = num;
+    });
+    return applyFormToRow({
+      id: 'TST2024' + String(maxId + 1),
+      submitter: 'Sally07',
+      mode: getModeByKey(values.modeKey),
+      status: getStatusByKey('queue'),
+      scores: null,
+      time: nowTimeStr(),
+      remark: values.remark || '',
+      config: {}
+    }, values);
+  }
+
+  function mountSearchInput(el, placeholder) {
+    if (!el) return;
+    createRoot(el).render(createElement(Input, {
+      prefix: createElement(IconSearch),
+      placeholder: placeholder,
+      showClear: true,
+      style: { width: '100%' }
+    }));
+  }
+
+  function mountDateRange(el) {
+    if (!el) return;
+    createRoot(el).render(createElement(DatePicker, {
+      type: 'dateRange',
+      style: { width: '100%' },
+      placeholder: ['开始日期', '结束日期'],
+      rangeSeparator: '~'
+    }));
+  }
+
+  function mountSelect(el, optionList) {
+    if (!el) return;
+    createRoot(el).render(createElement(Select, {
+      style: { width: '100%' },
+      placeholder: '全部',
+      defaultValue: 'all',
+      optionList: optionList
+    }));
+  }
+
+  function renderScoreCell(value) {
+    return createElement('td', { className: 'score' }, value == null ? '--' : String(value));
+  }
+
+  function renderTestRow(row, handlers) {
+    var status = row.status;
+    var statusClass = 'status' + (status.className ? ' ' + status.className : '');
+    var statusProps = { className: statusClass };
+    if (status.title) statusProps.title = status.title;
+
+    var actionCell;
+    if (status.key === 'testing') {
+      actionCell = createElement('td', { className: 'actions col-sticky-right' }, '-');
+    } else if (status.key === 'done') {
+      actionCell = createElement('td', { className: 'actions col-sticky-right' },
+        createElement('a', {
+          href: '云测试服务-测试报告.html?testId=' + encodeURIComponent(row.id),
+          onClick: function (e) { e.stopPropagation(); }
+        }, '报告'),
+        createElement('a', {
+          href: 'javascript:void(0)',
+          onClick: function (e) {
+            e.preventDefault();
+            handlers.onCompare();
+          }
+        }, '对比')
+      );
+    } else if (status.key === 'cancel') {
+      actionCell = createElement('td', { className: 'actions col-sticky-right' },
+        createElement('a', {
+          className: 'muted',
+          href: 'javascript:void(0)',
+          onClick: function (e) {
+            e.preventDefault();
+            handlers.onRetest(row.id);
+          }
+        }, '重新测试')
+      );
+    } else if (status.key === 'error') {
+      actionCell = createElement('td', { className: 'actions col-sticky-right' },
+        createElement('a', {
+          href: 'javascript:void(0)',
+          onClick: function (e) {
+            e.preventDefault();
+            handlers.onModify(row.id);
+          }
+        }, '修改配置')
+      );
+    } else if (status.key === 'queue') {
+      actionCell = createElement('td', { className: 'actions col-sticky-right' },
+        createElement('a', {
+          className: 'muted',
+          href: 'javascript:void(0)',
+          onClick: function (e) {
+            e.preventDefault();
+            handlers.onCancel(row.id);
+          }
+        }, '取消测试')
+      );
+    } else {
+      actionCell = createElement('td', { className: 'actions col-sticky-right' });
+    }
+
+    return createElement('tr', { key: row.id },
+      createElement('td', null, row.id),
+      createElement('td', null, row.version),
+      createElement('td', null, createElement(Tag, { color: row.mode.color }, row.mode.label)),
+      createElement('td', null, createElement('span', statusProps, status.label)),
+      renderScoreCell(row.scores ? row.scores[0] : null),
+      renderScoreCell(row.scores ? row.scores[1] : null),
+      renderScoreCell(row.scores ? row.scores[2] : null),
+      renderScoreCell(row.scores ? row.scores[3] : null),
+      createElement('td', null, row.submitter),
+      createElement('td', null, row.time),
+      createElement('td', null, row.remark),
+      actionCell
+    );
+  }
+
+  function TestFormModal(props) {
+    var tests = props.tests;
+    var setTests = props.setTests;
+    var modal = useModalStore();
+    var formApiRef = useRef(null);
+    var formState = useState({ modeKey: 'ai', deviceMode: 'random' });
+    var watched = formState[0];
+    var setWatched = formState[1];
+
+    var row = null;
+    if (modal.form.rowId) {
+      for (var i = 0; i < tests.length; i++) {
+        if (tests[i].id === modal.form.rowId) { row = tests[i]; break; }
+      }
+    }
+
+    var titleMap = { create: '新建测试', retest: '重新测试', modify: '修改配置' };
+    var title = titleMap[modal.form.mode] || '新建测试';
+    var initValues = useMemo(function () {
+      return buildFormInit(row);
+    }, [modal.form.visible, modal.form.mode, modal.form.rowId, row && row.id]);
+
+    useEffect(function () {
+      if (modal.form.visible && formApiRef.current) {
+        formApiRef.current.setValues(buildFormInit(row));
+        setWatched(buildFormInit(row));
+      }
+    }, [modal.form.visible, modal.form.mode, modal.form.rowId]);
+
+    var versionOptions = useMemo(function () {
+      return getVersionOptions(tests);
+    }, [tests]);
+
+    var resourceOptions = useMemo(function () {
+      if (watched.modeKey === 'script') {
+        return MOCK_SCRIPT_DATA.map(function (item) {
+          return { value: item.id, label: formatScriptOption(item) };
+        });
+      }
+      return MOCK_AI_DATA.map(function (item) {
+        return { value: item.id, label: formatAiOption(item) };
+      });
+    }, [watched.modeKey]);
+
+    var historyOptions = useMemo(function () {
+      return MOCK_HISTORY_DEVICES.map(function (item) {
+        return { value: item.id, label: formatDeviceOption(item) };
+      });
+    }, []);
+
+    var selfOptions = useMemo(function () {
+      return MOCK_SELF_DEVICES.map(function (item) {
+        return { value: item.id, label: formatDeviceOption(item) };
+      });
+    }, []);
+
+    function handleSubmit() {
+      if (!formApiRef.current) return;
+      formApiRef.current.validate().then(function (values) {
+        if (modal.form.mode === 'create') {
+          setTests(function (prev) { return [createTestRow(values)].concat(prev); });
+          Toast.success({ content: '测试任务已提交' });
+        } else if (row) {
+          setTests(function (prev) {
+            return prev.map(function (item) {
+              return item.id === row.id ? applyFormToRow(item, values) : item;
+            });
+          });
+          Toast.success({ content: modal.form.mode === 'retest' ? '已重新提交测试' : '配置已更新' });
+        }
+        modalStore.closeForm();
+      }).catch(function () {});
+    }
+
+    return createElement(Modal, {
+      title: title,
+      visible: modal.form.visible,
+      size: 'medium',
+      width: 684,
+      onCancel: modalStore.closeForm,
+      footer: createElement(React.Fragment, null,
+        createElement(Button, { onClick: modalStore.closeForm }, '取消'),
+        createElement(Button, { theme: 'solid', type: 'primary', onClick: handleSubmit }, '提交测试')
+      ),
+      bodyStyle: { maxHeight: '70vh', overflow: 'auto' }
+    },
+      createElement('div', { className: 'test-form-modal' },
+        createElement(Form, {
+          initValues: initValues,
+          getFormApi: function (api) { formApiRef.current = api; },
+          labelWidth: 145,
+          labelPosition: 'left',
+          onValueChange: function (values) {
+            setWatched(Object.assign({}, watched, values));
+          }
+        },
+          createElement(Form.Select, {
+            field: 'version',
+            label: '测试版本',
+            placeholder: '请选择测试版本',
+            optionList: versionOptions,
+            rules: [{ required: true, message: '请选择测试版本' }],
+            style: { width: '100%' }
+          }),
+          createElement('div', { className: 'form-group-block' },
+            createElement(Form.RadioGroup, {
+              field: 'modeKey',
+              label: '测试模式',
+              rules: [{ required: true, message: '请选择测试模式' }]
+            },
+              createElement(Radio, { value: 'ai' },
+                createElement('span', { className: 'mode-radio-with-tag' },
+                  'AI 自动玩',
+                  createElement(Tag, { size: 'small', className: 'mode-beta-tag' }, 'beta')
+                )
+              ),
+              createElement(Radio, { value: 'script' }, '脚本定制')
+            ),
+            createElement('div', { className: 'form-mode-hint' },
+              '请前往',
+              createElement(Typography.Text, {
+                link: true,
+                onClick: function (e) {
+                  e.preventDefault();
+                  Toast.info({ content: '功能开发中，敬请期待' });
+                }
+              }, '开发者工具'),
+              '抢先体验指令生成，你的每一步，都在帮它变得更好'
+            ),
+            createElement('div', { className: 'form-group-nested' },
+              createElement(Form.Select, {
+                field: 'resourceId',
+                noLabel: true,
+                placeholder: watched.modeKey === 'script' ? '请选择测试脚本' : '请选择测试指令',
+                optionList: resourceOptions,
+                disabled: !watched.modeKey,
+                rules: [{ required: true, message: '请选择' }],
+                style: { width: '100%' }
+              })
+            )
+          ),
+          createElement('div', { className: 'form-group-block' },
+            createElement(Form.RadioGroup, {
+              field: 'deviceMode',
+              label: '测试设备',
+              rules: [{ required: true, message: '请选择测试设备' }]
+            },
+              createElement(Radio, { value: 'random' }, '随机配置设备'),
+              createElement(Radio, { value: 'history' }, '复用历史设备'),
+              createElement(Radio, { value: 'self' }, '自选设备')
+            ),
+            watched.deviceMode === 'random' ? createElement('div', { className: 'form-group-nested form-device-count' },
+              createElement(Form.InputNumber, {
+                field: 'deviceCount',
+                noLabel: true,
+                min: 0,
+                placeholder: '最多配置10台设备',
+                rules: [{ required: true, message: '请输入设备数量' }]
+              }),
+              createElement('span', { className: 'form-device-count-suffix' }, '台设备')
+            ) : null,
+            watched.deviceMode === 'history' ? createElement('div', { className: 'form-group-nested' },
+              createElement(Form.Select, {
+                field: 'historyDeviceId',
+                noLabel: true,
+                placeholder: '请选择历史设备',
+                optionList: historyOptions,
+                rules: [{ required: true, message: '请选择历史设备' }],
+                style: { width: '100%' }
+              })
+            ) : null,
+            watched.deviceMode === 'self' ? createElement('div', { className: 'form-group-nested' },
+              createElement(Form.Select, {
+                field: 'selfDeviceId',
+                noLabel: true,
+                placeholder: '请选择设备',
+                optionList: selfOptions,
+                rules: [{ required: true, message: '请选择设备' }],
+                style: { width: '100%' }
+              })
+            ) : null
+          ),
+          createElement('div', { className: 'form-inline-row' },
+            createElement('label', { className: 'form-group-label' }, '测试时长'),
+            createElement('div', { className: 'form-readonly' }, '10 分钟')
+          ),
+          createElement('div', { className: 'form-inline-row' },
+            createElement('label', { className: 'form-group-label' }, '测试标准'),
+            createElement('a', { className: 'form-standard-link', href: 'javascript:void(0)' }, '云测试评测标准')
+          ),
+          createElement(Form.TextArea, {
+            field: 'remark',
+            label: '备注',
+            placeholder: '请输入备注',
+            maxCount: 200,
+            autosize: { minRows: 2, maxRows: 4 }
+          })
+        )
+      )
+    );
+  }
+
+  function CancelConfirmModal(props) {
+    var setTests = props.setTests;
+    var modal = useModalStore();
+
+    function handleConfirm() {
+      if (!modal.cancel.rowId) return;
+      setTests(function (prev) {
+        return prev.map(function (item) {
+          if (item.id !== modal.cancel.rowId) return item;
+          return Object.assign({}, item, { status: getStatusByKey('cancel') });
+        });
+      });
+      Toast.success({ content: '测试已取消' });
+      modalStore.closeCancel();
+    }
+
+    return createElement(Modal, {
+      title: '确认取消测试',
+      visible: modal.cancel.visible,
+      onCancel: modalStore.closeCancel,
+      footer: createElement(React.Fragment, null,
+        createElement(Button, { onClick: modalStore.closeCancel }, '下次再说'),
+        createElement(Button, { theme: 'solid', type: 'danger', onClick: handleConfirm }, '确认取消')
+      )
+    },
+      createElement(Typography.Paragraph, null, '取消后该测试任务将停止排队，且无法恢复当前队列位置。')
+    );
+  }
+
+  function ModalsRoot() {
+    var testsState = useTestStore();
+    var tests = testsState[0];
+    var setTests = testsState[1];
+    return createElement(React.Fragment, null,
+      createElement(TestFormModal, { tests: tests, setTests: setTests }),
+      createElement(CancelConfirmModal, { setTests: setTests })
+    );
+  }
+
+  function NewTestButton() {
+    return createElement(Button, {
+      theme: 'solid',
+      type: 'primary',
+      onClick: function () { modalStore.openForm('create'); }
+    }, '新建测试');
+  }
+
+  function TestTablePanel() {
+    var testsState = useTestStore();
+    var tests = testsState[0];
+    var pageState = useState(1);
+    var page = pageState[0];
+    var setPage = pageState[1];
+    var pageSizeState = useState(10);
+    var pageSize = pageSizeState[0];
+    var setPageSize = pageSizeState[1];
+    var wrapRef = useRef(null);
+
+    var handlers = {
+      onCompare: function () {
+        Toast.info({ content: '功能开发中，敬请期待' });
+      },
+      onRetest: function (id) { modalStore.openForm('retest', id); },
+      onModify: function (id) { modalStore.openForm('modify', id); },
+      onCancel: function (id) { modalStore.openCancel(id); }
+    };
+
+    var start = (page - 1) * pageSize;
+    var pageRows = tests.slice(start, start + pageSize);
+
+    useEffect(function () {
+      var wrap = wrapRef.current;
+      if (!wrap || !window.bindTableScroll) return;
+      window.bindTableScroll(wrap);
+      window.updateTableScrollState(wrap);
+    }, [page, pageSize, tests.length]);
+
+    return createElement(React.Fragment, null,
+      createElement('div', { className: 'table-wrap', ref: wrapRef },
+        createElement('table', null,
+          createElement('thead', null,
+            createElement('tr', null,
+              createElement('th', null, '测试ID'),
+              createElement('th', null, '测试版本'),
+              createElement('th', null, '测试模式'),
+              createElement('th', null, '测试状态'),
+              createElement('th', null, '启动性能'),
+              createElement('th', null, '运行性能'),
+              createElement('th', null, '网络性能'),
+              createElement('th', null, '兼容性'),
+              createElement('th', null, '提交人'),
+              createElement('th', null, '提交时间'),
+              createElement('th', null, '备注'),
+              createElement('th', { className: 'col-sticky-right' }, '操作')
+            )
+          ),
+          createElement('tbody', null, pageRows.map(function (row) {
+            return renderTestRow(row, handlers);
+          }))
+        )
+      ),
+      createElement('div', { className: 'table-pagination' },
+        createElement(Pagination, {
+          total: tests.length,
+          currentPage: page,
+          pageSize: pageSize,
+          showTotal: true,
+          showSizeChanger: true,
+          onChange: function (nextPage, nextPageSize) {
+            setPage(nextPage);
+            setPageSize(nextPageSize);
+          }
+        })
+      )
+    );
+  }
+
+  function renderModeRow(row) {
+    return createElement('tr', { key: row.id },
+      createElement('td', null, row.name),
+      createElement('td', null, row.user),
+      createElement('td', null, row.time),
+      createElement('td', { className: 'actions' },
+        createElement('a', { href: 'javascript:void(0)' }, '下载'),
+        createElement('a', { className: 'danger', href: 'javascript:void(0)' }, '删除')
+      )
+    );
+  }
+
+  function ModeTablePanel(props) {
+    var data = props.data;
+    var nameLabel = props.nameLabel;
+    var pageState = useState(1);
+    var page = pageState[0];
+    var setPage = pageState[1];
+    var pageSizeState = useState(10);
+    var pageSize = pageSizeState[0];
+    var setPageSize = pageSizeState[1];
+
+    var start = (page - 1) * pageSize;
+    var pageRows = data.slice(start, start + pageSize);
+
+    return createElement(React.Fragment, null,
+      createElement('div', { className: 'table-wrap' },
+        createElement('table', { style: { minWidth: '760px' } },
+          createElement('thead', null,
+            createElement('tr', null,
+              createElement('th', null, nameLabel),
+              createElement('th', null, '上传用户'),
+              createElement('th', null, '上传时间'),
+              createElement('th', null, '操作')
+            )
+          ),
+          createElement('tbody', null, pageRows.map(renderModeRow))
+        )
+      ),
+      createElement('div', { className: 'table-pagination' },
+        createElement(Pagination, {
+          total: data.length,
+          currentPage: page,
+          pageSize: pageSize,
+          showTotal: true,
+          showSizeChanger: true,
+          onChange: function (nextPage, nextPageSize) {
+            setPage(nextPage);
+            setPageSize(nextPageSize);
+          }
+        })
+      )
+    );
+  }
+
+  mountSearchInput(document.getElementById('filter-test-id'), '请输入测试ID');
+  mountSearchInput(document.getElementById('filter-test-version'), '请输入测试版本');
+  mountSearchInput(document.getElementById('filter-submitter'), '请输入提交人');
+  mountDateRange(document.getElementById('filter-test-time'));
+  mountSelect(document.getElementById('filter-test-mode'), [
+    { value: 'all', label: '全部' },
+    { value: 'ai', label: 'AI 自动玩' },
+    { value: 'script', label: '脚本定制' }
+  ]);
+  mountSelect(document.getElementById('filter-test-status'), [
+    { value: 'all', label: '全部' },
+    { value: 'queue', label: '排队中' },
+    { value: 'testing', label: '测试中' },
+    { value: 'done', label: '已完成' },
+    { value: 'cancel', label: '已取消' },
+    { value: 'error', label: '服务异常' }
+  ]);
+
+  mountSearchInput(document.getElementById('filter-ai-name'), '请输入指定名称');
+  mountDateRange(document.getElementById('filter-ai-time'));
+  mountSearchInput(document.getElementById('filter-script-name'), '请输入脚本名称');
+  mountDateRange(document.getElementById('filter-script-time'));
+
+  var testTableMount = document.getElementById('test-table-mount');
+  if (testTableMount) {
+    createRoot(testTableMount).render(createElement(TestTablePanel));
+  }
+
+  var newTestBtnMount = document.getElementById('new-test-btn-mount');
+  if (newTestBtnMount) {
+    createRoot(newTestBtnMount).render(createElement(NewTestButton));
+  }
+
+  var modalsMount = document.getElementById('modals-mount');
+  if (modalsMount) {
+    createRoot(modalsMount).render(createElement(ModalsRoot));
+  }
+
+  var aiTableMount = document.getElementById('ai-table-mount');
+  if (aiTableMount) {
+    createRoot(aiTableMount).render(createElement(ModeTablePanel, {
+      data: MOCK_AI_DATA,
+      nameLabel: '指令名称'
+    }));
+  }
+
+  var scriptTableMount = document.getElementById('script-table-mount');
+  if (scriptTableMount) {
+    createRoot(scriptTableMount).render(createElement(ModeTablePanel, {
+      data: MOCK_SCRIPT_DATA,
+      nameLabel: '脚本名称'
+    }));
+  }
+
+  var bannerEl = document.getElementById('page-banner');
+  if (bannerEl) {
+    createRoot(bannerEl).render(createElement(Banner, {
+      fullMode: false,
+      type: 'info',
+      bordered: true,
+      closeIcon: null,
+      description: '平台新增在线云测试服务，可对小游戏在主流机型中的性能表现开展批量化跑测，助力小游戏迅速定位性能问题并提供相应解决方案。'
+    }));
+  }
+
+  var funcDescIconEl = document.getElementById('func-desc-icon');
+  if (funcDescIconEl) {
+    createRoot(funcDescIconEl).render(createElement(IconBookStroked, {
+      size: 'default',
+      'aria-hidden': true
+    }));
+  }
+})();
+</script>
+</body>
+</html>
