@@ -192,6 +192,113 @@
       text-decoration: none;
     }
     .actions a.disabled { color: rgba(28,31,35,.35); cursor: not-allowed; pointer-events: none; }
+    .compare-report-modal .semi-modal-title {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+    }
+    .compare-report-modal .compare-modal-title-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
+      width: 100%;
+    }
+    .compare-report-modal .compare-modal-title-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1c1f23;
+      flex-shrink: 0;
+      line-height: 24px;
+    }
+    .compare-report-modal .compare-modal-table-wrap {
+      overflow: auto;
+      position: relative;
+    }
+    .compare-report-modal .compare-modal-table-wrap table {
+      width: 100%;
+      min-width: 1280px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .compare-report-modal .compare-modal-table-wrap thead th {
+      height: 36px;
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 14px;
+      color: rgba(28,31,35,.6);
+      background: rgba(46,50,56,.05);
+      white-space: nowrap;
+    }
+    .compare-report-modal .compare-modal-table-wrap tbody td {
+      height: 56px;
+      padding: 0 12px;
+      border-bottom: 1px solid rgba(28,31,35,.08);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+    .compare-report-modal .compare-modal-table-wrap .sortable-th {
+      cursor: pointer;
+      user-select: none;
+    }
+    .compare-report-modal .compare-modal-table-wrap .sortable-th:hover {
+      color: #1c1f23;
+    }
+    .compare-report-modal .compare-modal-table-wrap .sort-indicator {
+      margin-left: 4px;
+      color: #1c5cfb;
+      font-size: 12px;
+    }
+    .compare-report-modal .compare-source-hint {
+      font-size: 14px;
+      line-height: 22px;
+      color: rgba(28,31,35,.6);
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .compare-report-modal .table-pagination {
+      margin-top: 16px;
+    }
+    .mode-table-empty {
+      padding: 48px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+    }
+    .mode-form-upload-hint {
+      margin-top: 4px;
+      font-size: 12px;
+      line-height: 16px;
+      color: rgba(28, 31, 35, 0.6);
+    }
+    .mode-upload-field {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .mode-upload-label {
+      width: 100px;
+      flex-shrink: 0;
+      padding-right: 12px;
+      line-height: 32px;
+      text-align: right;
+      color: var(--semi-color-text-0);
+      font-size: 14px;
+    }
+    .mode-upload-label::before {
+      content: '*';
+      color: var(--semi-color-danger);
+      margin-right: 4px;
+    }
+    .mode-upload-main {
+      flex: 1;
+      min-width: 0;
+    }
   </style>
 </head>
 <body>
@@ -507,25 +614,11 @@
         </div>
 
         <div class="card tab-panel active" data-subpanel="ai">
-          <div class="card-toolbar">
-            <div class="filters">
-              <div class="field"><label>指令名称</label><div class="field-control field-control--input" id="filter-ai-name"></div></div>
-              <div class="field"><label>上传时间</label><div class="field-control field-control--date" id="filter-ai-time"></div></div>
-            </div>
-            <button class="btn-primary card-toolbar-action" type="button">新建指令</button>
-          </div>
-          <div id="ai-table-mount"></div>
+          <div id="ai-mode-mount"></div>
         </div>
 
         <div class="card tab-panel" data-subpanel="script">
-          <div class="card-toolbar">
-            <div class="filters">
-              <div class="field"><label>脚本名称</label><div class="field-control field-control--input" id="filter-script-name"></div></div>
-              <div class="field"><label>上传时间</label><div class="field-control field-control--date" id="filter-script-time"></div></div>
-            </div>
-            <button class="btn-primary card-toolbar-action" type="button">新建指令</button>
-          </div>
-          <div id="script-table-mount"></div>
+          <div id="script-mode-mount"></div>
         </div>
       </section>
     </main>
@@ -654,6 +747,8 @@
   var Radio = SemiUI.Radio;
   var RadioGroup = SemiUI.RadioGroup;
   var Typography = SemiUI.Typography;
+  var Upload = SemiUI.Upload;
+  var Empty = SemiUI.Empty;
   var IconSearch = SemiIcons.IconSearch;
   var IconBookStroked = SemiIcons.IconBookStroked;
   var createElement = React.createElement;
@@ -765,10 +860,28 @@
     return list;
   }
 
-  var MOCK_AI_DATA = generateMockAiCommands(36);
-  var MOCK_SCRIPT_DATA = generateMockScripts(36);
   var MOCK_HISTORY_DEVICES = generateMockHistoryDevices(12);
   var MOCK_SELF_DEVICES = generateMockSelfDevices(12);
+
+  function createModeStore(initialData) {
+    return {
+      data: initialData,
+      listeners: [],
+      subscribe: function (fn) {
+        this.listeners.push(fn);
+        return function () {
+          this.listeners = this.listeners.filter(function (item) { return item !== fn; });
+        }.bind(this);
+      },
+      setData: function (updater) {
+        this.data = typeof updater === 'function' ? updater(this.data.slice()) : updater;
+        this.listeners.forEach(function (fn) { fn(); });
+      }
+    };
+  }
+
+  var aiModeStore = createModeStore(generateMockAiCommands(36));
+  var scriptModeStore = createModeStore(generateMockScripts(36));
 
   function generateMockTests(count) {
     var list = [];
@@ -818,6 +931,7 @@
   var modalStore = {
     form: { visible: false, mode: 'create', rowId: null },
     cancel: { visible: false, rowId: null },
+    compare: { visible: false, sourceRowId: null },
     listeners: [],
     subscribe: function (fn) {
       modalStore.listeners.push(fn);
@@ -843,6 +957,32 @@
     closeCancel: function () {
       modalStore.cancel = { visible: false, rowId: null };
       modalStore.notify();
+    },
+    openCompare: function (rowId) {
+      modalStore.compare = { visible: true, sourceRowId: rowId };
+      modalStore.notify();
+    },
+    closeCompare: function () {
+      modalStore.compare = { visible: false, sourceRowId: null };
+      modalStore.notify();
+    },
+    modeCreate: { visible: false, kind: null },
+    modeDelete: { visible: false, kind: null, rowId: null },
+    openModeCreate: function (kind) {
+      modalStore.modeCreate = { visible: true, kind: kind };
+      modalStore.notify();
+    },
+    closeModeCreate: function () {
+      modalStore.modeCreate = { visible: false, kind: null };
+      modalStore.notify();
+    },
+    openModeDelete: function (kind, rowId) {
+      modalStore.modeDelete = { visible: true, kind: kind, rowId: rowId };
+      modalStore.notify();
+    },
+    closeModeDelete: function () {
+      modalStore.modeDelete = { visible: false, kind: null, rowId: null };
+      modalStore.notify();
     }
   };
 
@@ -863,6 +1003,69 @@
       return modalStore.subscribe(function () { setTick(function (n) { return n + 1; }); });
     }, []);
     return modalStore;
+  }
+
+  function useModeStore(store) {
+    var tickState = useState(0);
+    var setTick = tickState[1];
+    useEffect(function () {
+      return store.subscribe(function () { setTick(function (n) { return n + 1; }); });
+    }, [store]);
+    return [store.data, store.setData];
+  }
+
+  function getModeStoreByKind(kind) {
+    return kind === 'script' ? scriptModeStore : aiModeStore;
+  }
+
+  function filterModeRows(rows, nameKeyword, dateRange) {
+    var keyword = (nameKeyword || '').trim().toLowerCase();
+    return rows.filter(function (row) {
+      if (keyword && row.name.toLowerCase().indexOf(keyword) === -1) return false;
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        var rowDate = row.time.slice(0, 10);
+        var start = formatDateValue(dateRange[0]);
+        var end = formatDateValue(dateRange[1]);
+        if (rowDate < start || rowDate > end) return false;
+      }
+      return true;
+    });
+  }
+
+  function formatDateValue(value) {
+    if (!value) return '';
+    if (typeof value === 'string') return value.slice(0, 10);
+    if (value instanceof Date) {
+      return value.getFullYear() + '-' + pad2(value.getMonth() + 1) + '-' + pad2(value.getDate());
+    }
+    return String(value).slice(0, 10);
+  }
+
+  function downloadMockZip(fileName) {
+    var blob = new Blob(['mock zip content'], { type: 'application/zip' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  function createModeRow(kind, existingRows, name) {
+    var prefix = kind === 'script' ? 'script-' : 'ai-';
+    var maxId = 0;
+    existingRows.forEach(function (row) {
+      var num = parseInt(String(row.id).replace(prefix, ''), 10);
+      if (!isNaN(num) && num > maxId) maxId = num;
+    });
+    return {
+      id: prefix + (maxId + 1),
+      name: name,
+      user: 'Sally07',
+      time: nowTimeStr()
+    };
   }
 
   function getVersionOptions(data) {
@@ -988,7 +1191,7 @@
           href: 'javascript:void(0)',
           onClick: function (e) {
             e.preventDefault();
-            handlers.onCompare();
+            handlers.onCompare(row.id);
           }
         }, '对比')
       );
@@ -1044,6 +1247,226 @@
     );
   }
 
+  function getCompareDeviceCount(row, index) {
+    var tiers = [10, 20, 50];
+    var seed = parseInt(String(row.id).replace(/\D/g, ''), 10) || index;
+    return tiers[seed % tiers.length];
+  }
+
+  function getSameDeviceCount(deviceCount, row, index) {
+    if (deviceCount <= 1) return 0;
+    var seed = (parseInt(String(row.id).replace(/\D/g, ''), 10) || index) * 7;
+    return 1 + (seed % (deviceCount - 1));
+  }
+
+  function buildCompareRows(tests) {
+    var doneRows = tests.filter(function (row) { return row.status.key === 'done'; });
+    return doneRows.map(function (row, index) {
+      var deviceCount = getCompareDeviceCount(row, index);
+      return {
+        id: row.id,
+        version: row.version,
+        mode: row.mode,
+        deviceCount: deviceCount,
+        deviceLabel: deviceCount + '台',
+        scores: row.scores || [0, 0, 0, 0],
+        submitter: row.submitter,
+        time: row.time,
+        sameDevices: getSameDeviceCount(deviceCount, row, index)
+      };
+    });
+  }
+
+  function sortCompareRows(rows, sortField, sortOrder) {
+    if (!sortField) return rows.slice();
+    var sorted = rows.slice();
+    var scoreIndexMap = {
+      startup: 0,
+      runtime: 1,
+      network: 2,
+      compatibility: 3
+    };
+    sorted.sort(function (a, b) {
+      var av;
+      var bv;
+      if (sortField === 'sameDevices') {
+        av = a.sameDevices;
+        bv = b.sameDevices;
+      } else if (scoreIndexMap[sortField] != null) {
+        av = a.scores[scoreIndexMap[sortField]];
+        bv = b.scores[scoreIndexMap[sortField]];
+      } else {
+        return 0;
+      }
+      if (av === bv) return 0;
+      return sortOrder === 'asc' ? (av - bv) : (bv - av);
+    });
+    return sorted;
+  }
+
+  function renderSortableTh(label, field, sortField, sortOrder, onSort) {
+    var active = sortField === field;
+    return createElement('th', {
+      className: 'sortable-th',
+      onClick: function () { onSort(field); }
+    },
+      label,
+      active ? createElement('span', { className: 'sort-indicator' }, sortOrder === 'asc' ? '↑' : '↓') : null
+    );
+  }
+
+  function CompareReportModal(props) {
+    var tests = props.tests;
+    var modal = useModalStore();
+    var selectedState = useState(null);
+    var selectedId = selectedState[0];
+    var setSelectedId = selectedState[1];
+    var sortFieldState = useState(null);
+    var sortField = sortFieldState[0];
+    var setSortField = sortFieldState[1];
+    var sortOrderState = useState('desc');
+    var sortOrder = sortOrderState[0];
+    var setSortOrder = sortOrderState[1];
+    var pageState = useState(1);
+    var page = pageState[0];
+    var setPage = pageState[1];
+    var pageSizeState = useState(8);
+    var pageSize = pageSizeState[0];
+    var setPageSize = pageSizeState[1];
+
+    var compareRows = useMemo(function () {
+      return buildCompareRows(tests);
+    }, [tests]);
+
+    var sortedRows = useMemo(function () {
+      return sortCompareRows(compareRows, sortField, sortOrder);
+    }, [compareRows, sortField, sortOrder]);
+
+    var sourceRow = useMemo(function () {
+      if (!modal.compare.sourceRowId) return null;
+      return tests.find(function (row) { return row.id === modal.compare.sourceRowId; }) || null;
+    }, [tests, modal.compare.sourceRowId]);
+
+    useEffect(function () {
+      if (!modal.compare.visible) return;
+      setSelectedId(null);
+      setSortField(null);
+      setSortOrder('desc');
+      setPage(1);
+      setPageSize(8);
+    }, [modal.compare.visible, modal.compare.sourceRowId]);
+
+    function handleSort(field) {
+      if (sortField === field) {
+        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      } else {
+        setSortField(field);
+        setSortOrder('desc');
+      }
+      setPage(1);
+    }
+
+    function handleStartCompare() {
+      if (!selectedId) {
+        Toast.warning({ content: '请选择要对比的报告' });
+        return;
+      }
+      if (selectedId === modal.compare.sourceRowId) {
+        Toast.warning({ content: '请选择其他报告进行对比' });
+        return;
+      }
+      Toast.info({ content: '功能建设中' });
+    }
+
+    var start = (page - 1) * pageSize;
+    var pageRows = sortedRows.slice(start, start + pageSize);
+
+    var modalTitle = createElement('div', { className: 'compare-modal-title-row' },
+      createElement('span', { className: 'compare-modal-title-text' }, '对比报告'),
+      sourceRow
+        ? createElement('span', { className: 'compare-source-hint' },
+            '当前报告：', createElement('strong', null, sourceRow.id), '（', sourceRow.version, '）'
+          )
+        : null
+    );
+
+    return createElement(Modal, {
+      title: modalTitle,
+      visible: modal.compare.visible,
+      width: 920,
+      centered: true,
+      className: 'compare-report-modal',
+      onCancel: modalStore.closeCompare,
+      footer: createElement(React.Fragment, null,
+        createElement(Button, { onClick: modalStore.closeCompare }, '取消'),
+        createElement(Button, { theme: 'solid', type: 'primary', onClick: handleStartCompare }, '开始对比')
+      )
+    },
+      createElement('div', { className: 'compare-modal-table-wrap' },
+        createElement('table', null,
+          createElement('thead', null,
+            createElement('tr', null,
+              createElement('th', { style: { width: '56px' } }, ''),
+              createElement('th', null, '测试 ID'),
+              createElement('th', null, '测试版本'),
+              createElement('th', null, '测试模式'),
+              createElement('th', null, '测试设备'),
+              renderSortableTh('启动性能', 'startup', sortField, sortOrder, handleSort),
+              renderSortableTh('运行性能', 'runtime', sortField, sortOrder, handleSort),
+              renderSortableTh('网络性能', 'network', sortField, sortOrder, handleSort),
+              renderSortableTh('兼容性', 'compatibility', sortField, sortOrder, handleSort),
+              createElement('th', null, '提交人'),
+              createElement('th', null, '提交时间'),
+              renderSortableTh('相同设备', 'sameDevices', sortField, sortOrder, handleSort)
+            )
+          ),
+          createElement('tbody', null,
+            pageRows.length
+              ? pageRows.map(function (row) {
+                  var isSource = row.id === modal.compare.sourceRowId;
+                  return createElement('tr', { key: row.id },
+                    createElement('td', null,
+                      createElement(Radio, {
+                        checked: selectedId === row.id,
+                        disabled: isSource,
+                        onChange: function () { setSelectedId(row.id); }
+                      })
+                    ),
+                    createElement('td', null, row.id),
+                    createElement('td', null, row.version),
+                    createElement('td', null, createElement(Tag, { color: row.mode.color }, row.mode.label)),
+                    createElement('td', null, row.deviceLabel),
+                    createElement('td', { className: 'score' }, String(row.scores[0])),
+                    createElement('td', { className: 'score' }, String(row.scores[1])),
+                    createElement('td', { className: 'score' }, String(row.scores[2])),
+                    createElement('td', { className: 'score' }, String(row.scores[3])),
+                    createElement('td', null, row.submitter),
+                    createElement('td', null, row.time),
+                    createElement('td', null, String(row.sameDevices))
+                  );
+                })
+              : createElement('tr', null,
+                  createElement('td', { colSpan: 12, style: { textAlign: 'center', color: 'rgba(28,31,35,.6)' } }, '暂无可对比的已完成报告')
+                )
+          )
+        )
+      ),
+      createElement('div', { className: 'table-pagination' },
+        createElement(Pagination, {
+          total: sortedRows.length,
+          currentPage: page,
+          pageSize: pageSize,
+          showTotal: true,
+          showSizeChanger: true,
+          onChange: function (nextPage, nextPageSize) {
+            setPage(nextPage);
+            setPageSize(nextPageSize);
+          }
+        })
+      )
+    );
+  }
+
   function TestFormModal(props) {
     var tests = props.tests;
     var setTests = props.setTests;
@@ -1077,16 +1500,21 @@
       return getVersionOptions(tests);
     }, [tests]);
 
+    var aiRowsState = useModeStore(aiModeStore);
+    var aiRows = aiRowsState[0];
+    var scriptRowsState = useModeStore(scriptModeStore);
+    var scriptRows = scriptRowsState[0];
+
     var resourceOptions = useMemo(function () {
       if (watched.modeKey === 'script') {
-        return MOCK_SCRIPT_DATA.map(function (item) {
+        return scriptRows.map(function (item) {
           return { value: item.id, label: formatScriptOption(item) };
         });
       }
-      return MOCK_AI_DATA.map(function (item) {
+      return aiRows.map(function (item) {
         return { value: item.id, label: formatAiOption(item) };
       });
-    }, [watched.modeKey]);
+    }, [watched.modeKey, aiRows, scriptRows]);
 
     var historyOptions = useMemo(function () {
       return MOCK_HISTORY_DEVICES.map(function (item) {
@@ -1281,7 +1709,10 @@
     var setTests = testsState[1];
     return createElement(React.Fragment, null,
       createElement(TestFormModal, { tests: tests, setTests: setTests }),
-      createElement(CancelConfirmModal, { setTests: setTests })
+      createElement(CancelConfirmModal, { setTests: setTests }),
+      createElement(CompareReportModal, { tests: tests }),
+      createElement(ModeCreateModal),
+      createElement(ModeDeleteConfirmModal)
     );
   }
 
@@ -1305,9 +1736,7 @@
     var wrapRef = useRef(null);
 
     var handlers = {
-      onCompare: function () {
-        Toast.info({ content: '功能开发中，敬请期待' });
-      },
+      onCompare: function (id) { modalStore.openCompare(id); },
       onRetest: function (id) { modalStore.openForm('retest', id); },
       onModify: function (id) { modalStore.openForm('modify', id); },
       onCancel: function (id) { modalStore.openCancel(id); }
@@ -1363,58 +1792,291 @@
     );
   }
 
-  function renderModeRow(row) {
-    return createElement('tr', { key: row.id },
-      createElement('td', null, row.name),
-      createElement('td', null, row.user),
-      createElement('td', null, row.time),
-      createElement('td', { className: 'actions' },
-        createElement('a', { href: 'javascript:void(0)' }, '下载'),
-        createElement('a', { className: 'danger', href: 'javascript:void(0)' }, '删除')
+  function ModeCreateModal() {
+    var modal = useModalStore();
+    var kind = modal.modeCreate.kind;
+    var isAi = kind === 'ai';
+    var formApiRef = useRef(null);
+    var fileState = useState(null);
+    var file = fileState[0];
+    var setFile = fileState[1];
+
+    useEffect(function () {
+      if (!modal.modeCreate.visible) {
+        setFile(null);
+        if (formApiRef.current) formApiRef.current.reset();
+      }
+    }, [modal.modeCreate.visible]);
+
+    if (!kind) return null;
+
+    var store = getModeStoreByKind(kind);
+    var title = isAi ? '新建指令' : '新建脚本';
+    var nameLabel = isAi ? '指令名称' : '脚本名称';
+    var fileLabel = isAi ? '指令文件' : '脚本文件';
+    var successMsg = isAi ? '指令已创建' : '脚本已创建';
+
+    function handleBeforeUpload(object) {
+      var rawFile = object.fileInstance || object.file || object;
+      if (!rawFile || !rawFile.name) return false;
+      if (!/\.zip$/i.test(rawFile.name)) {
+        Toast.error({ content: '仅支持 zip 格式' });
+        return false;
+      }
+      if (rawFile.size > 55 * 1024 * 1024) {
+        Toast.error({ content: '文件大小不能超过 55M' });
+        return false;
+      }
+      setFile(rawFile);
+      return false;
+    }
+
+    function handleSubmit() {
+      if (!formApiRef.current) return;
+      formApiRef.current.validate().then(function (values) {
+        var name = (values.name || '').trim();
+        if (!name) {
+          Toast.warning({ content: '请输入' + nameLabel });
+          return;
+        }
+        if (name.length > 30) {
+          Toast.warning({ content: '名称最多30个字符' });
+          return;
+        }
+        if (!file) {
+          Toast.warning({ content: '请上传文件' });
+          return;
+        }
+        store.setData(function (prev) {
+          return [createModeRow(kind, prev, name)].concat(prev);
+        });
+        Toast.success({ content: successMsg });
+        modalStore.closeModeCreate();
+      }).catch(function () {});
+    }
+
+    return createElement(Modal, {
+      title: title,
+      visible: modal.modeCreate.visible,
+      size: 'medium',
+      width: 684,
+      onCancel: modalStore.closeModeCreate,
+      footer: createElement(React.Fragment, null,
+        createElement(Button, { onClick: modalStore.closeModeCreate }, '取消'),
+        createElement(Button, { theme: 'solid', type: 'primary', onClick: handleSubmit }, '确定')
+      )
+    },
+      createElement(Form, {
+        getFormApi: function (api) { formApiRef.current = api; },
+        labelWidth: 100,
+        labelPosition: 'left'
+      },
+        createElement(Form.Input, {
+          field: 'name',
+          label: nameLabel,
+          placeholder: '请输入' + nameLabel,
+          maxLength: 30,
+          rules: [
+            { required: true, message: '请输入' + nameLabel },
+            { max: 30, message: '最多30个字符' }
+          ],
+          style: { width: '100%' }
+        }),
+        createElement('div', { className: 'mode-upload-field' },
+          createElement('div', { className: 'mode-upload-label' }, fileLabel),
+          createElement('div', { className: 'mode-upload-main' },
+            createElement(Upload, {
+              accept: '.zip',
+              action: '',
+              limit: 1,
+              beforeUpload: handleBeforeUpload,
+              onRemove: function () { setFile(null); return true; }
+            }),
+            createElement('div', { className: 'mode-form-upload-hint' }, '上传指令格式为 zip，大小不超过 55M')
+          )
+        )
       )
     );
   }
 
-  function ModeTablePanel(props) {
-    var data = props.data;
-    var nameLabel = props.nameLabel;
+  function ModeDeleteConfirmModal() {
+    var modal = useModalStore();
+    var kind = modal.modeDelete.kind;
+    var rowId = modal.modeDelete.rowId;
+
+    if (!kind) return null;
+
+    var store = getModeStoreByKind(kind);
+    var isAi = kind === 'ai';
+
+    function handleDelete() {
+      store.setData(function (prev) {
+        return prev.filter(function (row) { return row.id !== rowId; });
+      });
+      Toast.success({ content: isAi ? '指令已删除' : '脚本已删除' });
+      modalStore.closeModeDelete();
+    }
+
+    return createElement(Modal, {
+      title: isAi ? '确认删除操作指令' : '确认删除操作脚本',
+      visible: modal.modeDelete.visible,
+      size: 'medium',
+      width: 684,
+      onCancel: modalStore.closeModeDelete,
+      footer: createElement(React.Fragment, null,
+        createElement(Button, { onClick: modalStore.closeModeDelete }, '取消'),
+        createElement(Button, { theme: 'solid', type: 'danger', onClick: handleDelete }, '删除')
+      )
+    },
+      isAi ? '删除后操作指令不再生效' : '删除后脚本不再生效'
+    );
+  }
+
+  function ModeTabPanel(props) {
+    var kind = props.kind;
+    var isAi = kind === 'ai';
+    var store = getModeStoreByKind(kind);
+    var rowsState = useModeStore(store);
+    var rows = rowsState[0];
+    var nameFilterState = useState('');
+    var nameFilter = nameFilterState[0];
+    var setNameFilter = nameFilterState[1];
+    var dateFilterState = useState(null);
+    var dateFilter = dateFilterState[0];
+    var setDateFilter = dateFilterState[1];
     var pageState = useState(1);
     var page = pageState[0];
     var setPage = pageState[1];
     var pageSizeState = useState(10);
     var pageSize = pageSizeState[0];
     var setPageSize = pageSizeState[1];
+    var wrapRef = useRef(null);
+
+    var nameLabel = isAi ? '指令名称' : '脚本名称';
+    var namePlaceholder = isAi ? '请输入指定名称' : '请输入脚本名称';
+    var createLabel = isAi ? '新建指令' : '新建脚本';
+
+    var filteredRows = useMemo(function () {
+      return filterModeRows(rows, nameFilter, dateFilter);
+    }, [rows, nameFilter, dateFilter]);
+
+    useEffect(function () {
+      setPage(1);
+    }, [nameFilter, dateFilter]);
+
+    useEffect(function () {
+      var maxPage = Math.max(1, Math.ceil(filteredRows.length / pageSize) || 1);
+      if (page > maxPage) setPage(maxPage);
+    }, [filteredRows.length, pageSize, page]);
 
     var start = (page - 1) * pageSize;
-    var pageRows = data.slice(start, start + pageSize);
+    var pageRows = filteredRows.slice(start, start + pageSize);
+
+    useEffect(function () {
+      var wrap = wrapRef.current;
+      if (!wrap || !window.bindTableScroll) return;
+      window.bindTableScroll(wrap);
+      window.updateTableScrollState(wrap);
+    }, [page, pageSize, filteredRows.length]);
+
+    function renderModeRow(row) {
+      return createElement('tr', { key: row.id },
+        createElement('td', null, row.name),
+        createElement('td', null, row.user),
+        createElement('td', null, row.time),
+        createElement('td', { className: 'actions' },
+          createElement('a', {
+            href: 'javascript:void(0)',
+            onClick: function (e) {
+              e.preventDefault();
+              downloadMockZip(row.name + '.zip');
+            }
+          }, '下载'),
+          createElement('a', {
+            className: 'danger',
+            href: 'javascript:void(0)',
+            onClick: function (e) {
+              e.preventDefault();
+              modalStore.openModeDelete(kind, row.id);
+            }
+          }, '删除')
+        )
+      );
+    }
 
     return createElement(React.Fragment, null,
-      createElement('div', { className: 'table-wrap' },
-        createElement('table', { style: { minWidth: '760px' } },
-          createElement('thead', null,
-            createElement('tr', null,
-              createElement('th', null, nameLabel),
-              createElement('th', null, '上传用户'),
-              createElement('th', null, '上传时间'),
-              createElement('th', null, '操作')
+      createElement('div', { className: 'card-toolbar' },
+        createElement('div', { className: 'filters' },
+          createElement('div', { className: 'field' },
+            createElement('label', null, nameLabel),
+            createElement('div', { className: 'field-control field-control--input' },
+              createElement(Input, {
+                prefix: createElement(IconSearch),
+                placeholder: namePlaceholder,
+                showClear: true,
+                value: nameFilter,
+                onChange: function (value) { setNameFilter(value); },
+                style: { width: '100%' }
+              })
             )
           ),
-          createElement('tbody', null, pageRows.map(renderModeRow))
-        )
+          createElement('div', { className: 'field' },
+            createElement('label', null, '上传时间'),
+            createElement('div', { className: 'field-control field-control--date' },
+              createElement(DatePicker, {
+                type: 'dateRange',
+                style: { width: '100%' },
+                placeholder: ['开始日期', '结束日期'],
+                rangeSeparator: '~',
+                value: dateFilter,
+                onChange: function (value) { setDateFilter(value); }
+              })
+            )
+          )
+        ),
+        createElement(Button, {
+          theme: 'solid',
+          type: 'primary',
+          className: 'card-toolbar-action',
+          onClick: function () { modalStore.openModeCreate(kind); }
+        }, createLabel)
       ),
-      createElement('div', { className: 'table-pagination' },
-        createElement(Pagination, {
-          total: data.length,
-          currentPage: page,
-          pageSize: pageSize,
-          showTotal: true,
-          showSizeChanger: true,
-          onChange: function (nextPage, nextPageSize) {
-            setPage(nextPage);
-            setPageSize(nextPageSize);
-          }
-        })
-      )
+      filteredRows.length === 0
+        ? createElement('div', { className: 'mode-table-empty' },
+            createElement(Empty, {
+              description: (nameFilter || (dateFilter && dateFilter[0]))
+                ? '没有符合条件的记录'
+                : '暂无数据'
+            })
+          )
+        : createElement(React.Fragment, null,
+            createElement('div', { className: 'table-wrap', ref: wrapRef },
+              createElement('table', { style: { minWidth: '760px' } },
+                createElement('thead', null,
+                  createElement('tr', null,
+                    createElement('th', null, nameLabel),
+                    createElement('th', null, '上传用户'),
+                    createElement('th', null, '上传时间'),
+                    createElement('th', null, '操作')
+                  )
+                ),
+                createElement('tbody', null, pageRows.map(renderModeRow))
+              )
+            ),
+            createElement('div', { className: 'table-pagination' },
+              createElement(Pagination, {
+                total: filteredRows.length,
+                currentPage: page,
+                pageSize: pageSize,
+                showTotal: true,
+                showSizeChanger: true,
+                onChange: function (nextPage, nextPageSize) {
+                  setPage(nextPage);
+                  setPageSize(nextPageSize);
+                }
+              })
+            )
+          )
     );
   }
 
@@ -1436,11 +2098,6 @@
     { value: 'error', label: '服务异常' }
   ]);
 
-  mountSearchInput(document.getElementById('filter-ai-name'), '请输入指定名称');
-  mountDateRange(document.getElementById('filter-ai-time'));
-  mountSearchInput(document.getElementById('filter-script-name'), '请输入脚本名称');
-  mountDateRange(document.getElementById('filter-script-time'));
-
   var testTableMount = document.getElementById('test-table-mount');
   if (testTableMount) {
     createRoot(testTableMount).render(createElement(TestTablePanel));
@@ -1456,20 +2113,14 @@
     createRoot(modalsMount).render(createElement(ModalsRoot));
   }
 
-  var aiTableMount = document.getElementById('ai-table-mount');
-  if (aiTableMount) {
-    createRoot(aiTableMount).render(createElement(ModeTablePanel, {
-      data: MOCK_AI_DATA,
-      nameLabel: '指令名称'
-    }));
+  var aiModeMount = document.getElementById('ai-mode-mount');
+  if (aiModeMount) {
+    createRoot(aiModeMount).render(createElement(ModeTabPanel, { kind: 'ai' }));
   }
 
-  var scriptTableMount = document.getElementById('script-table-mount');
-  if (scriptTableMount) {
-    createRoot(scriptTableMount).render(createElement(ModeTablePanel, {
-      data: MOCK_SCRIPT_DATA,
-      nameLabel: '脚本名称'
-    }));
+  var scriptModeMount = document.getElementById('script-mode-mount');
+  if (scriptModeMount) {
+    createRoot(scriptModeMount).render(createElement(ModeTabPanel, { kind: 'script' }));
   }
 
   var bannerEl = document.getElementById('page-banner');
